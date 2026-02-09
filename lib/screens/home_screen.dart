@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:privy_181125/screens/myDevice_BLE.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'myprofile.dart';
 import 'mydoctor.dart';
@@ -340,8 +341,8 @@ class _HomeScreenState extends State<HomeScreen> {
         .showSnackBar(SnackBar(content: Text("Open MyDevice  $mobile ")));
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => BleScan()),
-      // MaterialPageRoute(builder: (_) => MyDevicesPage(userMobile: mobile)),
+      // MaterialPageRoute(builder: (_) => BleScan()),
+      MaterialPageRoute(builder: (_) => MyDevicesPage(userMobile: mobile)),
 
 
     );
