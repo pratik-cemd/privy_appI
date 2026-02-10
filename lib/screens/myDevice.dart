@@ -214,45 +214,45 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
     _txChar =
         service.characteristics.firstWhere((c) => c.uuid == txUuid);
 
-    await _txChar!.setNotifyValue(true);
-    //
-    await Future.delayed(const Duration(milliseconds: 500));
+    // await _txChar!.setNotifyValue(true);
+    // //
+    // await Future.delayed(const Duration(milliseconds: 500));
 
     // // Enable notifications on RX (required for iOS)
-    // await _rxChar!.setNotifyValue(true);
-    //
-    // // iOS needs time here
-    // await Future.delayed(const Duration(milliseconds: 800));
+    await _rxChar!.setNotifyValue(true);
+
+    // iOS needs time here
+    await Future.delayed(const Duration(milliseconds: 800));
 
     _notifySub?.cancel();
-    _notifySub = _txChar!.value.listen(_onDataReceived);
-    // _notifySub = _rxChar!.value.listen(_onDataReceived); // ✅ CORRECT
+    // _notifySub = _txChar!.value.listen(_onDataReceived);
+    _notifySub = _rxChar!.value.listen(_onDataReceived); // ✅ CORRECT
   }
 
   // // ---------------- SEND old ----------------
   //
-  Future<void> _sendCommand() async {
-    if (_rxChar == null) return;
-
-    const cmd = "a\r\n";
-    await _rxChar!.write(
-      Uint8List.fromList(cmd.codeUnits),
-      withoutResponse: false,
-    );
-  }
+  // Future<void> _sendCommand() async {
+  //   if (_rxChar == null) return;
+  //
+  //   const cmd = "a\r\n";
+  //   await _rxChar!.write(
+  //     Uint8List.fromList(cmd.codeUnits),
+  //     withoutResponse: false,
+  //   );
+  // }
 
   // ---------------- SEND ----------------
 
-  // Future<void> _sendCommand() async {
-  //   if (_txChar == null) return;
-  //
-  //   const cmd = "a\r\n";
-  //
-  //   await _txChar!.write(
-  //     Uint8List.fromList(cmd.codeUnits),
-  //     withoutResponse: true, // safer for iOS
-  //   );
-  // }
+  Future<void> _sendCommand() async {
+    if (_txChar == null) return;
+
+    const cmd = "a\r\n";
+
+    await _txChar!.write(
+      Uint8List.fromList(cmd.codeUnits),
+      withoutResponse: true, // safer for iOS
+    );
+  }
 
   // ---------------- RECEIVE ----------------
 
