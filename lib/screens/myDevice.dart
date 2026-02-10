@@ -54,7 +54,7 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
         elevation: 0,
         centerTitle: true,
         title: const Text(
-          "My Device BLE2",
+          "My Device BLE3",
           style: TextStyle(color: Colors.white, fontSize: 22),
         ),
       ),
@@ -209,24 +209,24 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
     services.firstWhere((s) => s.uuid == serviceUuid);
 
     _rxChar =
-        service.characteristics.firstWhere((c) => c.uuid == rxUuid);
+        service.characteristics.firstWhere((c) => c.uuid == rxUuid);  // WRITE
 
     _txChar =
-        service.characteristics.firstWhere((c) => c.uuid == txUuid);
+        service.characteristics.firstWhere((c) => c.uuid == txUuid);  // NOTIFY
 
-    // await _txChar!.setNotifyValue(true);
+    await _txChar!.setNotifyValue(true);
     // //
     // await Future.delayed(const Duration(milliseconds: 500));
 
     // // Enable notifications on RX (required for iOS)
-    await _rxChar!.setNotifyValue(true);
+    // await _rxChar!.setNotifyValue(true);
 
     // iOS needs time here
     await Future.delayed(const Duration(milliseconds: 800));
 
     _notifySub?.cancel();
-    // _notifySub = _txChar!.value.listen(_onDataReceived);
-    _notifySub = _rxChar!.value.listen(_onDataReceived); // ✅ CORRECT
+    _notifySub = _txChar!.value.listen(_onDataReceived);
+    // _notifySub = _rxChar!.value.listen(_onDataReceived); // ✅ CORRECT
   }
 
   // // ---------------- SEND old ----------------
@@ -243,12 +243,23 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
 
   // ---------------- SEND ----------------
 
+  // Future<void> _sendCommand() async {
+  //   if (_txChar == null) return;
+  //
+  //   const cmd = "a\r\n";
+  //
+  //   await _txChar!.write(
+  //     Uint8List.fromList(cmd.codeUnits),
+  //     withoutResponse: true, // safer for iOS
+  //   );
+  // }
+
   Future<void> _sendCommand() async {
-    if (_txChar == null) return;
+    if (_rxChar == null) return;
 
     const cmd = "a\r\n";
 
-    await _txChar!.write(
+    await _rxChar!.write(
       Uint8List.fromList(cmd.codeUnits),
       withoutResponse: true, // safer for iOS
     );
