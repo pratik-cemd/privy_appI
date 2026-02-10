@@ -24,7 +24,7 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
   String _rxBuffer = "";
   int _crCount=0;
   bool _busy = false;
-  bool _loadingShown = false;
+  bool _isLoading = false;
 
   // UUIDs (must match ESP32)
   final Guid serviceUuid = Guid("000000FF-0000-1000-8000-00805F9B34FB");
@@ -54,7 +54,7 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
         elevation: 0,
         centerTitle: true,
         title: const Text(
-          "My Device BLE",
+          "My Device BLE2",
           style: TextStyle(color: Colors.white, fontSize: 22),
         ),
       ),
@@ -139,6 +139,25 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
               },
             ),
           ),
+// // 🔥 LOADING OVERLAY (THIS WAS MISSING)
+//           if (_isLoading)
+//             Container(
+//               color: Colors.black.withOpacity(0.4),
+//               child: const Center(
+//                 child: Column(
+//                   mainAxisSize: MainAxisSize.min,
+//                   children: [
+//                     CircularProgressIndicator(color: Colors.white),
+//                     SizedBox(height: 16),
+//                     Text(
+//                       "Communicating with device…",
+//                       style: TextStyle(color: Colors.white),
+//                     ),
+//                   ],
+//                 ),
+//               ),
+//             ),
+
         ],
       ),
     );
@@ -155,10 +174,13 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
     try {
       await _connectByMac(mac);
       await _discoverServices();
-      _showLoading(); // 👈 here
+      // _setLoading(true); // 👈 here
       await _sendCommand();
+
+
     } catch (_) {
-      _hideLoading();
+      // _hideLoading();
+      _setLoading(false);
       _busy = false;
       await _disconnectClean();
     }
@@ -192,149 +214,195 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
     _txChar =
         service.characteristics.firstWhere((c) => c.uuid == txUuid);
 
-    // await _txChar!.setNotifyValue(true);
+    await _txChar!.setNotifyValue(true);
     //
-    // await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 500));
 
-    // Enable notifications on RX (required for iOS)
-    await _rxChar!.setNotifyValue(true);
-
-    // iOS needs time here
-    await Future.delayed(const Duration(milliseconds: 800));
+    // // Enable notifications on RX (required for iOS)
+    // await _rxChar!.setNotifyValue(true);
+    //
+    // // iOS needs time here
+    // await Future.delayed(const Duration(milliseconds: 800));
 
     _notifySub?.cancel();
     _notifySub = _txChar!.value.listen(_onDataReceived);
+    // _notifySub = _rxChar!.value.listen(_onDataReceived); // ✅ CORRECT
   }
 
   // // ---------------- SEND old ----------------
   //
-  // Future<void> _sendCommand() async {
-  //   if (_rxChar == null) return;
-  //
-  //   const cmd = "a\r\n";
-  //   await _rxChar!.write(
-  //     Uint8List.fromList(cmd.codeUnits),
-  //     withoutResponse: false,
-  //   );
-  // }
-
-  // ---------------- SEND ----------------
-
   Future<void> _sendCommand() async {
-    if (_txChar == null) return;
+    if (_rxChar == null) return;
 
     const cmd = "a\r\n";
-
-    await _txChar!.write(
+    await _rxChar!.write(
       Uint8List.fromList(cmd.codeUnits),
-      withoutResponse: true, // safer for iOS
+      withoutResponse: false,
     );
   }
 
+  // ---------------- SEND ----------------
+
+  // Future<void> _sendCommand() async {
+  //   if (_txChar == null) return;
+  //
+  //   const cmd = "a\r\n";
+  //
+  //   await _txChar!.write(
+  //     Uint8List.fromList(cmd.codeUnits),
+  //     withoutResponse: true, // safer for iOS
+  //   );
+  // }
+
   // ---------------- RECEIVE ----------------
 
-  void _onDataReceived(List<int> data) async {
-    String chunk = String.fromCharCodes(data);
-    _rxBuffer += chunk;
-
-    if (_rxBuffer.contains('\n')) {
-      _hideLoading(); // 👈 stop loader immediately
-      final line = _rxBuffer.trim();
-      _rxBuffer = "";
-
-      // Split by spaces
-      final parts = line.split(RegExp(r'\s+'));
-
-      // Safety check
-      if (parts.length >= 5) {
-        final valueAfter2ndPosition = parts[2];
-
-        await showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (_) => AlertDialog(
-            title: const Text("Test Result"),
-            content: Text(
-              "Result: $valueAfter2ndPosition\n"
-                  // "Full line: $line",
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text("OK"),
-              ),
-            ],
-          ),
-        );
-      }
-
-      else if (parts.length <= 3) {
-        final valueAfter2ndPosition = parts[2];
-
-        await showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (_) => AlertDialog(
-            title: const Text("Test Result"),
-            content: Text(
-                "Result: $valueAfter2ndPosition\n"
-              "Full line: $line",
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text("OK"),
-              ),
-            ],
-          ),
-        );
-      }
-
-
-
-      await _disconnectClean();
-    }
-  }
-
   // void _onDataReceived(List<int> data) async {
-  //   // _rxBuffer += String.fromCharCodes(data);
-  //
   //   String chunk = String.fromCharCodes(data);
-  //
-  //   // Count how many '\r' came in this chunk
-  //   // _crCount += ' '.allMatches(chunk).length;
-  //
-  //   // Replace '\r' with 'x' for visibility
-  //   // chunk = chunk.replaceAll(' ', 'x');
-  //
   //   _rxBuffer += chunk;
-  //   if (_rxBuffer.contains("\n")) {
-  //     final result = _rxBuffer.trim();
+  //
+  //   if (_rxBuffer.contains('\n')) {
+  //     _setLoading(false); // 👈 stop loader immediately
+  //     // final line = _rxBuffer.trim();
+  //     final line = _rxBuffer
+  //         .replaceAll('\r', '')
+  //         .split('\n')
+  //         .first
+  //         .trim();
+  //
   //     _rxBuffer = "";
   //
-  //     await showDialog(
-  //       context: context,
-  //       barrierDismissible: false,
-  //       builder: (_) => AlertDialog(
-  //         title: const Text("Test Result"),
-  //         // content: Text(result),
-  //         content: Text(
-  //           "Result: $result\n"
-  //               // "CR count: $_crCount",
-  //         ),
-  //         actions: [
-  //           TextButton(
-  //             onPressed: () => Navigator.pop(context),
-  //             child: const Text("OK"),
+  //     // Split by spaces
+  //     final parts = line.split(RegExp(r'\s+'));
+  //
+  //     // Safety check
+  //     if (parts.length >= 5) {
+  //       final valueAfter2ndPosition = parts[2];
+  //
+  //       await showDialog(
+  //         context: context,
+  //         barrierDismissible: false,
+  //         builder: (_) => AlertDialog(
+  //           title: const Text("Test Result"),
+  //           content: Text(
+  //             "Result: $valueAfter2ndPosition\n"
+  //                 // "Full line: $line",
   //           ),
-  //         ],
-  //       ),
-  //     );
-  //    // Reset counter for next test
-  //     _crCount = 0;
+  //           actions: [
+  //             TextButton(
+  //               onPressed: () => Navigator.pop(context),
+  //               child: const Text("OK"),
+  //             ),
+  //           ],
+  //         ),
+  //       );
+  //     }
+  //
+  //     else if (parts.length >= 3) {
+  //       final valueAfter2ndPosition = parts[2];
+  //
+  //       await showDialog(
+  //         context: context,
+  //         barrierDismissible: false,
+  //         builder: (_) => AlertDialog(
+  //           title: const Text("Test Result"),
+  //           content: Text(
+  //               "Result: $valueAfter2ndPosition\n"
+  //             "Full line: $line",
+  //           ),
+  //           actions: [
+  //             TextButton(
+  //               onPressed: () => Navigator.pop(context),
+  //               child: const Text("OK"),
+  //             ),
+  //           ],
+  //         ),
+  //       );
+  //     }
+  //
+  //
+  //
   //     await _disconnectClean();
   //   }
   // }
+  // void _onDataReceived(List<int> data) async {
+  //   final chunk = String.fromCharCodes(data);
+  //   _rxBuffer += chunk;
+  //
+  //   if (_rxBuffer.contains('\n')) {
+  //     // _setLoading(false);
+  //
+  //     final line = _rxBuffer
+  //         .replaceAll('\r', '')
+  //         .split('\n')
+  //         .first
+  //         .trim();
+  //
+  //     _rxBuffer = "";
+  //
+  //     final parts = line.split(RegExp(r'\s+'));
+  //
+  //     if (parts.length >= 3) {
+  //       final value = parts[2];
+  //
+  //       await showDialog(
+  //         context: context,
+  //         barrierDismissible: false,
+  //         builder: (_) => AlertDialog(
+  //           title: const Text("Test Result"),
+  //           content: Text("Result: $value"),
+  //           actions: [
+  //             TextButton(
+  //               onPressed: () => Navigator.pop(context),
+  //               child: const Text("OK"),
+  //             ),
+  //           ],
+  //         ),
+  //       );
+  //     }
+  //
+  //     await _disconnectClean();
+  //   }
+  // }
+
+  void _onDataReceived(List<int> data) async {
+    // _rxBuffer += String.fromCharCodes(data);
+
+    String chunk = String.fromCharCodes(data);
+
+    // Count how many '\r' came in this chunk
+    // _crCount += ' '.allMatches(chunk).length;
+
+    // Replace '\r' with 'x' for visibility
+    // chunk = chunk.replaceAll(' ', 'x');
+
+    _rxBuffer += chunk;
+    if (_rxBuffer.contains("\n")) {
+      final result = _rxBuffer.trim();
+      _rxBuffer = "";
+
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => AlertDialog(
+          title: const Text("Test Result"),
+          // content: Text(result),
+          content: Text(
+            "Result: $result\n"
+                // "CR count: $_crCount",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
+     // Reset counter for next test
+      _crCount = 0;
+      await _disconnectClean();
+    }
+  }
 
   // // ---------------- DISCONNECT ----------------
   //
@@ -356,7 +424,7 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
 // ---------------- DISCONNECT ----------------
 
   Future<void> _disconnectClean() async {
-    _hideLoading(); // 👈 safety
+    _setLoading(false); // 👈 safety
     try {
       await _notifySub?.cancel();
       _notifySub = null;
@@ -395,37 +463,42 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
   }
 
 
-
-
-  void _showLoading() {
-    if (_loadingShown) return;
-    _loadingShown = true;
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const AlertDialog(
-        content: Row(
-          children: [
-            SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-            SizedBox(width: 16),
-            Text("Sending command…"),
-          ],
-        ),
-      ),
-    );
+  void _setLoading(bool value) {
+    if (!mounted) return;
+    setState(() {
+      _isLoading = value;
+    });
   }
 
-  void _hideLoading() {
-    if (!_loadingShown) return;
-    _loadingShown = false;
+  // void _showLoading() {
+  //   if (_loadingShown) return;
+  //   _loadingShown = true;
+  //
+  //   showDialog(
+  //     context: context,
+  //     barrierDismissible: false,
+  //     builder: (_) => const AlertDialog(
+  //       content: Row(
+  //         children: [
+  //           SizedBox(
+  //             width: 24,
+  //             height: 24,
+  //             child: CircularProgressIndicator(strokeWidth: 2),
+  //           ),
+  //           SizedBox(width: 16),
+  //           Text("Sending command…"),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
-    Navigator.of(context, rootNavigator: true).pop();
-  }
+  // void _hideLoading() {
+  //   if (!_loadingShown) return;
+  //   _loadingShown = false;
+  //
+  //   Navigator.of(context, rootNavigator: true).pop();
+  // }
 
 }
 
