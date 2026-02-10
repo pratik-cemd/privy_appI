@@ -24,6 +24,7 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
   String _rxBuffer = "";
   int _crCount=0;
   bool _busy = false;
+  bool _loadingShown = false;
 
   // UUIDs (must match ESP32)
   final Guid serviceUuid = Guid("000000FF-0000-1000-8000-00805F9B34FB");
@@ -154,19 +155,19 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
     try {
       await _connectByMac(mac);
       await _discoverServices();
+      _showLoading(); // 👈 here
       await _sendCommand();
     } catch (_) {
+      _hideLoading();
       _busy = false;
+      await _disconnectClean();
     }
   }
 
   // ---------------- CONNECT ----------------
 
   Future<void> _connectByMac(String mac) async {
-    _device = BluetoothDevice.fromId(
-      mac
-    );
-
+    _device = BluetoothDevice.fromId(mac);
     try {
       await _device!.connect(
         autoConnect: false,
@@ -191,23 +192,42 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
     _txChar =
         service.characteristics.firstWhere((c) => c.uuid == txUuid);
 
-    await _txChar!.setNotifyValue(true);
+    // await _txChar!.setNotifyValue(true);
+    //
+    // await Future.delayed(const Duration(milliseconds: 500));
 
-    await Future.delayed(const Duration(milliseconds: 500));
+    // Enable notifications on RX (required for iOS)
+    await _rxChar!.setNotifyValue(true);
+
+    // iOS needs time here
+    await Future.delayed(const Duration(milliseconds: 800));
 
     _notifySub?.cancel();
     _notifySub = _txChar!.value.listen(_onDataReceived);
   }
 
+  // // ---------------- SEND old ----------------
+  //
+  // Future<void> _sendCommand() async {
+  //   if (_rxChar == null) return;
+  //
+  //   const cmd = "a\r\n";
+  //   await _rxChar!.write(
+  //     Uint8List.fromList(cmd.codeUnits),
+  //     withoutResponse: false,
+  //   );
+  // }
+
   // ---------------- SEND ----------------
 
   Future<void> _sendCommand() async {
-    if (_rxChar == null) return;
+    if (_txChar == null) return;
 
     const cmd = "a\r\n";
-    await _rxChar!.write(
+
+    await _txChar!.write(
       Uint8List.fromList(cmd.codeUnits),
-      withoutResponse: false,
+      withoutResponse: true, // safer for iOS
     );
   }
 
@@ -218,6 +238,7 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
     _rxBuffer += chunk;
 
     if (_rxBuffer.contains('\n')) {
+      _hideLoading(); // 👈 stop loader immediately
       final line = _rxBuffer.trim();
       _rxBuffer = "";
 
@@ -315,19 +336,36 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
   //   }
   // }
 
-  // ---------------- DISCONNECT ----------------
+  // // ---------------- DISCONNECT ----------------
+  //
+  // Future<void> _disconnectClean() async {
+  //   try {
+  //     await _notifySub?.cancel();
+  //     await Future.delayed(const Duration(milliseconds: 200));
+  //     await _device?.disconnect();
+  //   } catch (_) {}
+  //
+  //   _notifySub = null;
+  //   _device = null;
+  //   _rxChar = null;
+  //   _txChar = null;
+  //   _busy = false;
+  // }
+
+
+// ---------------- DISCONNECT ----------------
 
   Future<void> _disconnectClean() async {
+    _hideLoading(); // 👈 safety
     try {
       await _notifySub?.cancel();
-      await Future.delayed(const Duration(milliseconds: 200));
+      _notifySub = null;
+
+      await _rxChar?.setNotifyValue(false);
+
       await _device?.disconnect();
     } catch (_) {}
 
-    _notifySub = null;
-    _device = null;
-    _rxChar = null;
-    _txChar = null;
     _busy = false;
   }
 
@@ -355,6 +393,40 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
     _device?.disconnect();
     super.dispose();
   }
+
+
+
+
+  void _showLoading() {
+    if (_loadingShown) return;
+    _loadingShown = true;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const AlertDialog(
+        content: Row(
+          children: [
+            SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+            SizedBox(width: 16),
+            Text("Sending command…"),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _hideLoading() {
+    if (!_loadingShown) return;
+    _loadingShown = false;
+
+    Navigator.of(context, rootNavigator: true).pop();
+  }
+
 }
 
 
