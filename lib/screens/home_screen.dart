@@ -337,13 +337,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onMyDevice() {
-    print("OPEN MyDevice WITH MOBILE → $mobile");
+    print("OPEN MyDevice WITH MOBILE wjgfgfhgfgh → $mobile");
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text("Open MyDevice  $mobile ")));
     Navigator.push(
       context,
       // MaterialPageRoute(builder: (_) => BleScan()),
       // MaterialPageRoute(builder: (_) => MyDevicesPage(userMobile: mobile)),
+
       MaterialPageRoute(builder: (_) => BLEPage()),
 
 
