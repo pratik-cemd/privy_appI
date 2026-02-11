@@ -222,48 +222,40 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
   }
 
   Future<void> _connectByMac2(String mac, String deviceName) async {
-    final isIOS = Theme.of(context).platform == TargetPlatform.iOS;
+    final isIOS =
+        Theme.of(context).platform == TargetPlatform.iOS;
 
     if (isIOS) {
-      final completer = Completer<BluetoothDevice>();
-
-      final subscription =
-      FlutterBluePlus.scanResults.listen((results) {
-        for (ScanResult r in results) {
-          if (r.device.name == deviceName) {
-            if (!completer.isCompleted) {
-              completer.complete(r.device);
-            }
-          }
-        }
-      });
+      BluetoothDevice? foundDevice;
 
       FlutterBluePlus.startScan(timeout: const Duration(seconds: 5));
 
-      _device = await completer.future.timeout(
-        const Duration(seconds: 10),
-        onTimeout: () {
-          throw Exception("Device not found");
-        },
-      );
+      await for (final results in FlutterBluePlus.scanResults) {
+        for (ScanResult r in results) {
+          if (r.device.name == deviceName) {
+            foundDevice = r.device;
+            break;
+          }
+        }
+        if (foundDevice != null) break;
+      }
 
       await FlutterBluePlus.stopScan();
-      await subscription.cancel();
+
+      if (foundDevice == null) {
+        throw Exception("Device not found");
+      }
+
+      _device = foundDevice;
     } else {
-      // Android can use MAC
       _device = BluetoothDevice.fromId(mac);
     }
 
-    try {
-      await _device!.connect(
-        autoConnect: false,
-        timeout: const Duration(seconds: 10),
-      );
-    } catch (_) {
-      // ignore already connected error
-    }
+    await _device!.connect(
+      autoConnect: false,
+      timeout: const Duration(seconds: 10),
+    );
 
-    // Important for iOS stability
     await _device!.requestMtu(185);
     await Future.delayed(const Duration(milliseconds: 300));
   }
@@ -352,17 +344,31 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
   //   );
   // }
 
+  // Future<void> _sendCommand() async {
+  //   if (_rxChar == null) return;
+  //
+  //   const cmd = "a\r\n";
+  //
+  //   await _rxChar!.write(
+  //     Uint8List.fromList(cmd.codeUnits),
+  //     withoutResponse: false, // safer for iOS
+  //   );
+  // }
+
   Future<void> _sendCommand() async {
     if (_rxChar == null) return;
 
     const cmd = "a\r\n";
+    final bytes = Uint8List.fromList(cmd.codeUnits);
 
-    await _rxChar!.write(
-      Uint8List.fromList(cmd.codeUnits),
-      withoutResponse: false, // safer for iOS
-    );
+    if (_rxChar!.properties.writeWithoutResponse) {
+      await _rxChar!.write(bytes, withoutResponse: true);
+    } else if (_rxChar!.properties.write) {
+      await _rxChar!.write(bytes, withoutResponse: false);
+    } else {
+      throw Exception("Characteristic does not support write");
+    }
   }
-
   // ---------------- RECEIVE ----------------
 
   // void _onDataReceived(List<int> data) async {
