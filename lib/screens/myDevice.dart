@@ -109,7 +109,8 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
                           _showPopup("Status", "Please Recharge");
                           return;
                         }
-                        await _connectSendAndRead(mac);
+                        // await _connectSendAndRead(mac);
+                        await _connectSendAndRead2(mac, key);
                       },
                       child: Card(
                         margin: const EdgeInsets.only(bottom: 12),
@@ -139,6 +140,10 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
               },
             ),
           ),
+          if (_isLoading)
+            const Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            ),
 // // 🔥 LOADING OVERLAY (THIS WAS MISSING)
 //           if (_isLoading)
 //             Container(
@@ -178,14 +183,30 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
       await _sendCommand();
 
 
-    } catch (_) {
+    } catch (e) {
       // _hideLoading();
       _setLoading(false);
       _busy = false;
+      _showPopup("Error", e.toString());
       await _disconnectClean();
     }
   }
 
+  Future<void> _connectSendAndRead2(String mac, String deviceName) async {
+    if (_busy) return;
+    _busy = true;
+    _rxBuffer = "";
+    _setLoading(true);
+
+    try {
+      await _connectByMac2(mac, deviceName);
+      await _discoverServices();
+      await _sendCommand();
+    } catch (e) {
+      _showPopup("Error", e.toString());
+      await _disconnectClean();
+    }
+  }
   // ---------------- CONNECT ----------------
 
   Future<void> _connectByMac(String mac) async {
@@ -197,6 +218,49 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
       );
     } catch (_) {
       // ignore already-connected error
+    }
+  }
+
+  Future<void> _connectByMac2(String mac, String deviceName) async {
+    final isIOS = Theme.of(context).platform == TargetPlatform.iOS;
+
+    if (isIOS) {
+      final completer = Completer<BluetoothDevice>();
+
+      final subscription =
+      FlutterBluePlus.scanResults.listen((results) {
+        for (ScanResult r in results) {
+          if (r.device.name == deviceName) {
+            if (!completer.isCompleted) {
+              completer.complete(r.device);
+            }
+          }
+        }
+      });
+
+      FlutterBluePlus.startScan(timeout: const Duration(seconds: 5));
+
+      _device = await completer.future.timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          throw Exception("Device not found");
+        },
+      );
+
+      await FlutterBluePlus.stopScan();
+      await subscription.cancel();
+    } else {
+      // Android can use MAC
+      _device = BluetoothDevice.fromId(mac);
+    }
+
+    try {
+      await _device!.connect(
+        autoConnect: false,
+        timeout: const Duration(seconds: 10),
+      );
+    } catch (_) {
+      // ignore already connected error
     }
   }
 
@@ -222,7 +286,7 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
     // await _rxChar!.setNotifyValue(true);
 
     // iOS needs time here
-    await Future.delayed(const Duration(milliseconds: 800));
+    await Future.delayed(const Duration(milliseconds: 500));
 
     _notifySub?.cancel();
     _notifySub = _txChar!.value.listen(_onDataReceived);
@@ -261,7 +325,7 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
 
     await _rxChar!.write(
       Uint8List.fromList(cmd.codeUnits),
-      withoutResponse: true, // safer for iOS
+      withoutResponse: false, // safer for iOS
     );
   }
 

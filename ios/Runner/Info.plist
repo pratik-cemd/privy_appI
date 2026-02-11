@@ -53,10 +53,10 @@
     <string>This app needs access to the microphone.</string>
 
     <key>NSBluetoothAlwaysUsageDescription</key>
-    <string>This app uses Bluetooth to connect to devices.</string>
+    <string>App needs Bluetooth to communicate with your device</string>
 
     <key>NSBluetoothPeripheralUsageDescription</key>
-    <string>This app uses Bluetooth to connect to devices.</string>
+    <string>App needs Bluetooth to communicate with your device</string>
 
     <key>NSLocationWhenInUseUsageDescription</key>
     <string>Location is required for Bluetooth scanning.</string>
