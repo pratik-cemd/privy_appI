@@ -262,11 +262,15 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
     } catch (_) {
       // ignore already connected error
     }
+
+    // Important for iOS stability
+    await _device!.requestMtu(185);
+    await Future.delayed(const Duration(milliseconds: 300));
   }
 
   // ---------------- GATT ----------------
 
-  Future<void> _discoverServices() async {
+  Future<void> _discoverServices2() async {
     final services = await _device!.discoverServices();
 
     final service =
@@ -292,6 +296,36 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
     _notifySub = _txChar!.value.listen(_onDataReceived);
     // _notifySub = _rxChar!.value.listen(_onDataReceived); // ✅ CORRECT
   }
+
+  Future<void> _discoverServices() async {
+    final services = await _device!.discoverServices();
+
+    for (var service in services) {
+      if (service.uuid == serviceUuid) {
+        for (var c in service.characteristics) {
+          if (c.uuid == rxUuid) {
+            _rxChar = c;
+          }
+          if (c.uuid == txUuid) {
+            _txChar = c;
+          }
+        }
+      }
+    }
+
+    if (_txChar == null || _rxChar == null) {
+      throw Exception("Characteristics not found");
+    }
+
+    // IMPORTANT: iOS requires notify first
+    await _txChar!.setNotifyValue(true);
+
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    _notifySub?.cancel();
+    _notifySub = _txChar!.lastValueStream.listen(_onDataReceived);
+  }
+
 
   // // ---------------- SEND old ----------------
   //
@@ -451,6 +485,7 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
     // chunk = chunk.replaceAll(' ', 'x');
 
     _rxBuffer += chunk;
+    print("Received: $chunk");
     if (_rxBuffer.contains("\n")) {
       final result = _rxBuffer.trim();
       _rxBuffer = "";
