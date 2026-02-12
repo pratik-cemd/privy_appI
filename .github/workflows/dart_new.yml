@@ -1,4 +1,4 @@
-name: iOS2-ipa-build
+name: iOS_New-ipa-build
 
 on:
   workflow_dispatch:
@@ -36,7 +36,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: build/ios/iphoneos/FlutterIpaExport.ipa
-          tag: v1.0
+          file: build/ios/iphoneos/Ios.ipa
+          tag: v2.0
           overwrite: true
           body: "This is first release"
