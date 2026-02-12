@@ -41,6 +41,8 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
     await Permission.bluetoothConnect.request();
     await Permission.bluetoothScan.request();
     await Permission.location.request();
+
+
   }
 
   // ---------------- UI ----------------
@@ -423,22 +425,21 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
     const cmd = "a\r\n";
     final bytes = Uint8List.fromList(cmd.codeUnits);
 
+    // Preferred order: try without response first (faster), fallback to with response
     try {
-      // Prefer WITH response on iOS unless you are 100% sure the characteristic
-      // advertises ESP_GATT_CHAR_PROP_BIT_WRITE_NR
-      await _rxChar!.write(
-        bytes,
-        withoutResponse: false,   // ← most reliable on iOS
-      );
-      print("Command sent (with response)");
-    } catch (e) {
-      print("Write failed: $e");
-      // fallback attempt
-      try {
+      if (_rxChar!.properties.writeWithoutResponse) {
         await _rxChar!.write(bytes, withoutResponse: true);
-        print("Fallback: sent without response");
+        print("Sent without response (fast path)");
+      } else {
+        await _rxChar!.write(bytes, withoutResponse: false);
+        print("Sent with response");
+      }
+    } catch (e) {
+      print("Write failed → fallback: $e");
+      try {
+        await _rxChar!.write(bytes, withoutResponse: false);
       } catch (e2) {
-        print("Both write attempts failed: $e2");
+        print("Critical write error: $e2");
       }
     }
   }

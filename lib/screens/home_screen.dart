@@ -8,6 +8,7 @@ import 'myprofile.dart';
 import 'mydoctor.dart';
 import 'myDevice.dart';
 import 'bleScan.dart';
+import 'myDevicesPage.dart';
 
 class HomeScreen extends StatefulWidget {
   static const routeName = '/home';
@@ -342,7 +343,8 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.push(
       context,
       // MaterialPageRoute(builder: (_) => BleScan()),
-      MaterialPageRoute(builder: (_) => MyDevicesPage(userMobile: mobile)),
+      // MaterialPageRoute(builder: (_) => MyDevicesPage(userMobile: mobile)),
+      MaterialPageRoute(builder: (_) => MyDevicesPage2(userMobile: mobile)),
 
       // MaterialPageRoute(builder: (_) => BLEPage()),
 

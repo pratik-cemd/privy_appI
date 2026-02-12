@@ -58,6 +58,12 @@
     <key>NSBluetoothPeripheralUsageDescription</key>
     <string>App needs Bluetooth to communicate with your device</string>
 
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>bluetooth-central</string>
+        <string>bluetooth-peripheral</string>
+    </array>
+
     <key>NSLocationWhenInUseUsageDescription</key>
     <string>Location is required for Bluetooth scanning.</string>
 
