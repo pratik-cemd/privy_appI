@@ -1,11 +1,11 @@
-name: iOS-ipa-build
+name: iOS2-ipa-build
 
 on:
   workflow_dispatch:
 
 jobs:
   build-ios:
-    name: 🎉 iOS Build
+    name: 🎉 iOS2 Build
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
