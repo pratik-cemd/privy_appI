@@ -6,9 +6,10 @@ import 'package:privy_181125/screens/myDevice_BLE.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'myprofile.dart';
 import 'mydoctor.dart';
-import 'myDevice.dart';
+// import 'myDevice.dart';
 import 'bleScan.dart';
 import 'myDevicesPage.dart';
+import "testHistory.dart";
 
 class HomeScreen extends StatefulWidget {
   static const routeName = '/home';
@@ -262,7 +263,7 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 _menuButton("Test History", Icons.history, _onTestHistory),
                 const SizedBox(height: 12),
-                _menuButton("My Device1   ", Icons.devices, _onMyDevice),
+                _menuButton("My Device   ", Icons.devices, _onMyDevice),
                 const SizedBox(height: 12),
                 _menuButton(
                   // type == "doctor" ? "My Patient  " : "My Doctor   ",
@@ -334,6 +335,12 @@ class _HomeScreenState extends State<HomeScreen> {
   void _onTestHistory() {
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text("Open TestHistory")));
+    Navigator.push(
+      context,
+           MaterialPageRoute(builder: (_) => TesthistoryPage(userMobile: mobile)),
+
+
+    );
   }
 
   void _onMyDevice() {
