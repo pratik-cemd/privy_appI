@@ -770,7 +770,7 @@ class _MyDevicesPageState2 extends State<MyDevicesPage2> {
         await _updateResultDB(displayResult,refcesValue);
 
         // 🔥 Update Firebase
-        await _updateRealtimeDB(displayResult);
+        await _updateRealtimeDB();
       }
 
       // 🔥 Disconnect after processing
@@ -808,25 +808,48 @@ class _MyDevicesPageState2 extends State<MyDevicesPage2> {
     final snapshot = await testCountRef.get();
 
     if (snapshot.exists) {
-      return snapshot.value as int? ?? 0;
+      return (snapshot.value as num?)?.toInt() ?? 0;
     } else {
       return 0;
     }
   }
 
-  Future<void> _updateRealtimeDB(String result) async {
+  // Future<void> _updateRealtimeDB(String result) async {
+  //
+  //   final userRef = dbRef.child("Devices/${widget.userMobile}/").child(selectedDeviceId);
+  //
+  //   final snapshot = await userRef.get();
+  //
+  //   if (snapshot.exists) {
+  //     int currentCount = snapshot.child("testCount").value as int? ?? 0;
+  //
+  //     await userRef.update({
+  //       "testCount": currentCount - 1,
+  //     });
+  //   }
+  // }
 
-    final userRef = dbRef.child("Devices/${widget.userMobile}/").child(selectedDeviceId);
 
-    final snapshot = await userRef.get();
+  Future<void> _updateRealtimeDB() async {
+    final testCountRef = dbRef
+        .child("Devices")
+        .child(widget.userMobile)
+        .child(selectedDeviceId)
+        .child("testCount");
 
-    if (snapshot.exists) {
-      int currentCount = snapshot.child("testCount").value as int? ?? 0;
+    await testCountRef.runTransaction((currentData) {
+      if (currentData == null) {
+        return Transaction.success(0);
+      }
 
-      await userRef.update({
-        "testCount": currentCount - 1,
-      });
-    }
+      final currentCount = (currentData as num).toInt();
+
+      if (currentCount > 0) {
+        return Transaction.success(currentCount - 1);
+      } else {
+        return Transaction.success(0);
+      }
+    });
   }
 
   Future<void> _updateResultDB(String result,String refValue) async {
