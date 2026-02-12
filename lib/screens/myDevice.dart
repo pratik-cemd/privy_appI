@@ -289,35 +289,82 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
     // _notifySub = _rxChar!.value.listen(_onDataReceived); // ✅ CORRECT
   }
 
+  // Future<void> _discoverServices() async {
+  //   final services = await _device!.discoverServices();
+  //
+  //   for (var service in services) {
+  //     if (service.uuid == serviceUuid) {
+  //       for (var c in service.characteristics) {
+  //         if (c.uuid == rxUuid) {
+  //           _rxChar = c;
+  //         }
+  //         if (c.uuid == txUuid) {
+  //           _txChar = c;
+  //         }
+  //       }
+  //     }
+  //   }
+  //
+  //   if (_txChar == null || _rxChar == null) {
+  //     throw Exception("Characteristics not found");
+  //   }
+  //
+  //   // IMPORTANT: iOS requires notify first
+  //   await _txChar!.setNotifyValue(true);
+  //
+  //   await Future.delayed(const Duration(milliseconds: 500));
+  //
+  //   _notifySub?.cancel();
+  //   _notifySub = _txChar!.lastValueStream.listen(_onDataReceived);
+  // }
+
   Future<void> _discoverServices() async {
+    if (_device == null) throw Exception("No device");
+
     final services = await _device!.discoverServices();
 
-    for (var service in services) {
-      if (service.uuid == serviceUuid) {
-        for (var c in service.characteristics) {
-          if (c.uuid == rxUuid) {
-            _rxChar = c;
-          }
-          if (c.uuid == txUuid) {
-            _txChar = c;
-          }
-        }
+    BluetoothService? targetService;
+    for (var s in services) {
+      if (s.uuid == serviceUuid) {
+        targetService = s;
+        break;
       }
     }
 
-    if (_txChar == null || _rxChar == null) {
-      throw Exception("Characteristics not found");
+    if (targetService == null) {
+      throw Exception("Service $serviceUuid not found");
     }
 
-    // IMPORTANT: iOS requires notify first
+    BluetoothCharacteristic? rx;
+    BluetoothCharacteristic? tx;
+
+    for (var c in targetService.characteristics) {
+      if (c.uuid == rxUuid) rx = c;
+      if (c.uuid == txUuid) tx = c;
+    }
+
+    if (rx == null || tx == null) {
+      throw Exception("RX or TX characteristic missing");
+    }
+
+    _rxChar = rx;
+    _txChar = tx;
+
+    // ──────────────────────────────────────────────
+    // VERY IMPORTANT FOR iOS
+    // ──────────────────────────────────────────────
     await _txChar!.setNotifyValue(true);
 
-    await Future.delayed(const Duration(milliseconds: 500));
+    // Give CoreBluetooth time to enable notifications (critical on iOS)
+    await Future.delayed(const Duration(milliseconds: 600));
 
+    // Use lastValueStream – more reliable cross-platform
     _notifySub?.cancel();
-    _notifySub = _txChar!.lastValueStream.listen(_onDataReceived);
+    _notifySub = _txChar!.lastValueStream.listen(
+      _onDataReceived,
+      onError: (e) => print("Notify error: $e"),
+    );
   }
-
 
   // // ---------------- SEND old ----------------
   //
@@ -355,18 +402,44 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
   //   );
   // }
 
+  // Future<void> _sendCommand() async {
+  //   if (_rxChar == null) return;
+  //
+  //   const cmd = "a\r\n";
+  //   final bytes = Uint8List.fromList(cmd.codeUnits);
+  //
+  //   if (_rxChar!.properties.writeWithoutResponse) {
+  //     await _rxChar!.write(bytes, withoutResponse: true);
+  //   } else if (_rxChar!.properties.write) {
+  //     await _rxChar!.write(bytes, withoutResponse: false);
+  //   } else {
+  //     throw Exception("Characteristic does not support write");
+  //   }
+  // }
+
   Future<void> _sendCommand() async {
     if (_rxChar == null) return;
 
     const cmd = "a\r\n";
     final bytes = Uint8List.fromList(cmd.codeUnits);
 
-    if (_rxChar!.properties.writeWithoutResponse) {
-      await _rxChar!.write(bytes, withoutResponse: true);
-    } else if (_rxChar!.properties.write) {
-      await _rxChar!.write(bytes, withoutResponse: false);
-    } else {
-      throw Exception("Characteristic does not support write");
+    try {
+      // Prefer WITH response on iOS unless you are 100% sure the characteristic
+      // advertises ESP_GATT_CHAR_PROP_BIT_WRITE_NR
+      await _rxChar!.write(
+        bytes,
+        withoutResponse: false,   // ← most reliable on iOS
+      );
+      print("Command sent (with response)");
+    } catch (e) {
+      print("Write failed: $e");
+      // fallback attempt
+      try {
+        await _rxChar!.write(bytes, withoutResponse: true);
+        print("Fallback: sent without response");
+      } catch (e2) {
+        print("Both write attempts failed: $e2");
+      }
     }
   }
   // ---------------- RECEIVE ----------------

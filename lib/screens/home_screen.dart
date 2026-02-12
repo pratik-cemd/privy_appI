@@ -8,7 +8,6 @@ import 'myprofile.dart';
 import 'mydoctor.dart';
 import 'myDevice.dart';
 import 'bleScan.dart';
-import 'blePage.dart';
 
 class HomeScreen extends StatefulWidget {
   static const routeName = '/home';
@@ -262,7 +261,7 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 _menuButton("Test History", Icons.history, _onTestHistory),
                 const SizedBox(height: 12),
-                _menuButton("My Device   ", Icons.devices, _onMyDevice),
+                _menuButton("My Device1   ", Icons.devices, _onMyDevice),
                 const SizedBox(height: 12),
                 _menuButton(
                   // type == "doctor" ? "My Patient  " : "My Doctor   ",
@@ -343,9 +342,9 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.push(
       context,
       // MaterialPageRoute(builder: (_) => BleScan()),
-      // MaterialPageRoute(builder: (_) => MyDevicesPage(userMobile: mobile)),
+      MaterialPageRoute(builder: (_) => MyDevicesPage(userMobile: mobile)),
 
-      MaterialPageRoute(builder: (_) => BLEPage()),
+      // MaterialPageRoute(builder: (_) => BLEPage()),
 
 
     );
