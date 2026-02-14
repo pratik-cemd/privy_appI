@@ -337,14 +337,21 @@ class _HomeScreenState extends State<HomeScreen> {
         .showSnackBar(SnackBar(content: Text("Open TestHistory")));
     Navigator.push(
       context,
-           MaterialPageRoute(builder: (_) => TesthistoryPage(userMobile: mobile)),
+           MaterialPageRoute(builder: (_) => TesthistoryPage(
+               userMobile: mobile,
+             name: name,
+             age: age,
+             gender: gender,
+             disease: disease,
+             address: address,
+           )),
 
 
     );
   }
 
   void _onMyDevice() {
-    print("OPEN MyDevice WITH MOBILE wjgfgfhgfgh → $mobile");
+    print("OPEN MyDevice WITH MOBILE → $mobile");
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text("Open MyDevice  $mobile ")));
     Navigator.push(

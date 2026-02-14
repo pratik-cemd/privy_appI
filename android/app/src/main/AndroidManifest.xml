@@ -14,7 +14,7 @@
         android:required="true" />
 
     <application
-        android:label="privy_050226"
+        android:label="Privy Scintiglo"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 
