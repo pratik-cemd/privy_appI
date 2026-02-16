@@ -477,14 +477,24 @@ class _TesthistoryPageState extends State<TesthistoryPage> {
     final routes = {
       "home": "/home",
       "history": "/testHistory",
-      // "/myDevice": (context) => MyDevicesPage2(userMobile: userMobile ),
+      "/myDevice": "/myDevice",
       "doctor": "/myDoctor",
     };
 
     if (routes.containsKey(selected)) {
       Navigator.pushNamed(context, routes[selected]!);
     }
+    // MaterialApp(
+    //   routes: {
+    //     "/home": (context) => HomeScreen(),
+    //     "/testHistory": (context) => TestHistoryScreen(),
+    //     "/myDevice": (context) => MyDevicesPage2(userMobile: userMobile),
+    //     "/myDoctor": (context) => MyDoctorScreen(),
+    //   },
+    // );
   }
+  
+  
 }
 
 

@@ -7,6 +7,7 @@ import 'screens/signup_screen.dart';
 import 'screens/myprofile.dart';
 import 'screens/mydoctor.dart';
 import 'screens/testHistory.dart';
+import 'screens/myDevicesPage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -46,6 +47,7 @@ class MyApp extends StatelessWidget {
         SignupScreen.routeName: (_) => const SignupScreen(),
         "/home": (context) => const HomeScreen(),
         "/myprofile": (context) => const MyProfileScreen(),
+        // "/myDevice": (context) => const MyDevicesPage2(userMobile: userMobile),
         // "/testHistory": (context) => const TesthistoryPage(userMobile: ),
         // "/myprofile": (context) => const MyProfileScreen(),
 
