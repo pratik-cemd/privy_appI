@@ -422,6 +422,13 @@ class _MyDevicesPageState2 extends State<MyDevicesPage2> {
   BluetoothCharacteristic? _rxChar;
   BluetoothCharacteristic? _txChar;
 
+  StreamSubscription<DatabaseEvent>? _testCountListener;
+  Map<String, int> _lastKnownTestCount = {};
+
+
+
+
+
   StreamSubscription<List<int>>? _notifySub;
   StreamSubscription<BluetoothAdapterState>? _adapterStateSub;
 
@@ -440,6 +447,7 @@ class _MyDevicesPageState2 extends State<MyDevicesPage2> {
     super.initState();
     _initPermissions();
     _initBluetoothListener();
+    // _startDeviceListener();
   }
 
   Future<void> _initPermissions() async {
@@ -612,6 +620,8 @@ class _MyDevicesPageState2 extends State<MyDevicesPage2> {
                           _showPopup("Status", "Please Recharge");
                           return;
                         }
+
+                        _listenToDeviceTestCount(key);
                         await _connectSendAndRead(mac, key);
                       },
                       child: Card(
@@ -918,6 +928,7 @@ class _MyDevicesPageState2 extends State<MyDevicesPage2> {
     _notifySub?.cancel();
     _adapterStateSub?.cancel();
     _device?.disconnect();
+    _testCountListener?.cancel();
     super.dispose();
   }
 
@@ -1277,6 +1288,157 @@ class _MyDevicesPageState2 extends State<MyDevicesPage2> {
       stopScan(); // final cleanup
     });
   }
+
+  // void _startDeviceListener() {
+  //   final mobile = widget.userMobile;
+  //
+  //   _deviceListener = dbRef
+  //       .child("Devices/$mobile")
+  //       .onValue
+  //       .listen((event) {
+  //
+  //     if (!event.snapshot.exists) return;
+  //
+  //     final data =
+  //     event.snapshot.value as Map<dynamic, dynamic>;
+  //
+  //     data.forEach((deviceId, deviceData) {
+  //
+  //       final currentTestCount =
+  //           deviceData["testCount"] as int? ?? 0;
+  //
+  //       // First time just store value
+  //       if (_lastKnownTestCount == null) {
+  //         _lastKnownTestCount = currentTestCount;
+  //         return;
+  //       }
+  //
+  //       // 🔥 Detect change
+  //       if (_lastKnownTestCount != currentTestCount) {
+  //
+  //         _lastKnownTestCount = currentTestCount;
+  //
+  //         showDialog(
+  //           context: context,
+  //           builder: (context) => AlertDialog(
+  //             title: const Text("Notification"),
+  //             content: Text(
+  //                 "Test count changed to $currentTestCount"),
+  //             actions: [
+  //               TextButton(
+  //                 onPressed: () {
+  //                   Navigator.pop(context);
+  //                 },
+  //                 child: const Text("OK"),
+  //               ),
+  //             ],
+  //           ),
+  //         );
+  //       }
+  //     });
+  //   });
+  // }
+
+  void _listenToDeviceTestCount(String deviceId) {
+    final mobile = widget.userMobile;
+
+    _testCountListener?.cancel(); // avoid multiple listeners
+
+    _testCountListener = dbRef
+        .child("Devices/$mobile/$deviceId/testCount")
+        .onValue
+        .listen((event) async {
+
+      if (!event.snapshot.exists) return;
+
+      final currentTestCount =
+          event.snapshot.value as int? ?? 0;
+
+      final previous =
+      _lastKnownTestCount[deviceId];
+
+      // First time for this device
+      if (previous == null) {
+        _lastKnownTestCount[deviceId] =
+            currentTestCount;
+        return;
+      }
+
+      // If changed → sync to BLE device
+      if (previous != currentTestCount) {
+        _lastKnownTestCount[deviceId] =
+            currentTestCount;
+
+        await _sendCounterCorrection(
+            deviceId, currentTestCount);
+      }
+    });
+  }
+
+
+  Future<void> _sendCounterCorrection(
+      String deviceId,
+      int newTestCount,
+      ) async {
+    try {
+      final macSnapshot = await dbRef
+          .child("Devices")
+          .child(widget.userMobile)
+          .child(deviceId)
+          .child("mac")
+          .get();
+
+      if (!macSnapshot.exists) return;
+
+      final mac = macSnapshot.value.toString();
+
+      await _connectToDevice(mac, deviceId);
+      await _discoverServices();
+
+      final command = "\$$newTestCount\r\n";
+      final bytes = Uint8List.fromList(command.codeUnits);
+
+      await _rxChar!.write(
+        bytes,
+        withoutResponse:
+        _rxChar!.properties.writeWithoutResponse,
+      );
+
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      await _disconnectClean();
+
+      if (!mounted) return;
+
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text("Update"),
+          content: Text(
+              "Device counter synced.\nRemaining Test Count: $newTestCount"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      await _disconnectClean();
+
+      if (!mounted) return;
+
+      _showPopup("Sync Failed", e.toString());
+    }
+  }
+
+
+
+
+
+
+
 }
 
 
