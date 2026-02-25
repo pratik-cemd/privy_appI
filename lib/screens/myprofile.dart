@@ -4,14 +4,29 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
 import 'mydoctor.dart';
+import 'user_model.dart';
+import 'myDevicesPage.dart';
+import 'testHistory.dart';
+
+// class MyProfileScreen extends StatefulWidget {
+//   const MyProfileScreen({Key? key}) : super(key: key);
+//   static const routeName = '/myprofile';
+//   @override
+//   State<MyProfileScreen> createState() => _MyProfileScreenState();
+// }
 
 class MyProfileScreen extends StatefulWidget {
-  const MyProfileScreen({Key? key}) : super(key: key);
+  final UserModel user;
+
+  const MyProfileScreen({
+    Key? key,
+    required this.user,
+  }) : super(key: key);
+
   static const routeName = '/myprofile';
   @override
   State<MyProfileScreen> createState() => _MyProfileScreenState();
 }
-
 class _MyProfileScreenState extends State<MyProfileScreen> {
   bool isEditMode = false;
   bool _loading = true;
@@ -153,7 +168,24 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
     ScaffoldMessenger.of(context)
         .showSnackBar(const SnackBar(content: Text("Profile updated")));
 
-    Navigator.pop(context, updates);
+    // Navigator.pop(context, updates);
+    Navigator.pop(
+      context,
+      UserModel(
+        mobile: mobile,
+        name: nameC.text.trim(),
+        age: ageC.text.trim(),
+        gender: genderC.text.trim(),
+        address: addressC.text.trim(),
+        disease: diseaseC.text.trim(),
+        type: type,
+        email: emailC.text.trim(),
+        imageBase64: imageBase64,
+        clinicName: clinicNameC.text.trim(),
+        specialization: specializationC.text.trim(),
+        count: countC.text.trim(),
+      ),
+    );
   }
 
   Widget field(String label, TextEditingController c,
@@ -208,36 +240,45 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                   // Popup Menu (Black text/icons)
                   PopupMenuButton<String>(
                     icon: const Icon(Icons.menu, color: Colors.white),
+                    offset: const Offset(0, 40), // adjust this value
                     onSelected: (value) {
+
+
                       if (value == "home") {
                         Navigator.pushNamed(context, "/home");
-                      } else if (value == "history") {
-                        Navigator.pushNamed(context, "/testHistory");
-                      } else if (value == "device") {
-                        Navigator.pushNamed(context, "/myDevice");
-                      } else if (value == "doctor") {
+                      }
+                      else if (value == "history") {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => TesthistoryPage(
+                              user:widget.user,
+                            ),
+                          ),
+                        );
+                      }
+
+                      else if (value == "device") {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => MyDevicesPage2(
+                                user: widget.user
+                            ),
+                          ),
+                        );
+                      }
+                      else if (value == "doctor") {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (_) => MyDoctorPage(
-                              mobile: mobile,
-                              name: nameC.text,
-                              type: type,
-                              age: ageC.text,
-                              gender: genderC.text,
-                              email: emailC.text,
-                              address: addressC.text,
-                              imageBase64: imageBase64,
-                              disease: diseaseC.text,
-                              specialization: specializationC.text,
-                              clinicName: clinicNameC.text,
-                              // allDoctorsType: null,
-                              allDoctorsType: type.toLowerCase() == "admin" ? "aallDoct" : null,
+                              user: widget.user,
                             ),
                           ),
                         );
-
                       }
+
                     },
                     itemBuilder: (context) => [
                       PopupMenuItem(
@@ -273,11 +314,22 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                                   TextStyle(color: Colors.black)),
                             ],
                           )),
+                      // PopupMenuItem(
+                      //   value: "profile",
+                      //   child: Row(
+                      //     children: [
+                      //       Icon(Icons.person, color: Colors.black),
+                      //       SizedBox(width: 8),
+                      //       Text("My Profile", style: TextStyle(color: Colors.black)),
+                      //     ],
+                      //   )),
+
+
                       PopupMenuItem(
                           value: "doctor",
                           child: Row(
                             children: const [
-                              Icon(Icons.person, color: Colors.black),
+                              Icon(Icons.people, color: Colors.black),
                               SizedBox(width: 8),
                               Text("My Doctor",
                                   style:
@@ -286,6 +338,8 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                           )),
                     ],
                   ),
+
+
 
                   const Text("My Profile",
                       style: TextStyle(color: Colors.white, fontSize: 20)),

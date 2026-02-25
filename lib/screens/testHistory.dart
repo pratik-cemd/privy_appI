@@ -10,43 +10,65 @@ import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'myDevicesPage.dart';
+import 'mydoctor.dart';
+import 'user_model.dart';
+import  'myprofile.dart';
+
+// class TesthistoryPage extends StatefulWidget {
+//   final String userMobile;
+//   final String name;
+//   final String age;
+//   final String gender;
+//   final String address;
+//   final String disease;
+//
+//   const TesthistoryPage({
+//     super.key,
+//     required this.userMobile,
+//     required this.name,
+//     required this.age,
+//     required this.gender,
+//     required this.address,
+//     required this.disease,
+//   });
+//
+//   @override
+//   State<TesthistoryPage> createState() => _TesthistoryPageState();
+// }
 
 class TesthistoryPage extends StatefulWidget {
-  final String userMobile;
-  final String name;
-  final String age;
-  final String gender;
-  final String address;
-  final String disease;
+  final UserModel user;
+  final String? patientMobile; // NEW (optional)
 
   const TesthistoryPage({
     super.key,
-    required this.userMobile,
-    required this.name,
-    required this.age,
-    required this.gender,
-    required this.address,
-    required this.disease,
+    required this.user,
+    this.patientMobile, // optional
   });
 
   @override
   State<TesthistoryPage> createState() => _TesthistoryPageState();
 }
-
 class _TesthistoryPageState extends State<TesthistoryPage> {
   final dbRef = FirebaseDatabase.instance.ref();
   List<Map<String, dynamic>> testList = [];
   bool _isLoading = false;
+  late String targetMobile;
+
   @override
   void initState() {
     super.initState();
+    // ✅ If doctor clicked patient → use that mobile
+    // ✅ Otherwise use logged in user mobile
+    targetMobile = widget.patientMobile ?? widget.user.mobile;
     _loadResults();
   }
 
 
   Future<void> _loadResults() async {
+    // print("mobile number "+targetMobile);
     final snapshot =
-    await dbRef.child("Result/${widget.userMobile}").get();
+    await dbRef.child("Result/${targetMobile}").get();
 
     if (!snapshot.exists) return;
 
@@ -134,11 +156,11 @@ class _TesthistoryPageState extends State<TesthistoryPage> {
           pw.SizedBox(height: 10),
           pw.Divider(),
 
-          pw.Text("Name: ${widget.name}"),
-          pw.Text("Mobile: ${widget.userMobile}"),
+          pw.Text("Name: ${widget.user.name}"),
+          pw.Text("Mobile: ${targetMobile}"),
           pw.Text(
-              "Age/Gender: ${widget.age}Y / ${widget.gender}"),
-          pw.Text("Disease: ${widget.disease}"),
+              "Age/Gender: ${widget.user.age}Y / ${widget.user.gender}"),
+          pw.Text("Disease: ${widget.user.disease}"),
           pw.SizedBox(height: 20),
 
           pw.Table.fromTextArray(
@@ -189,7 +211,7 @@ class _TesthistoryPageState extends State<TesthistoryPage> {
     final directory =
     await getTemporaryDirectory();
     final file = File(
-        "${directory.path}/History_${widget.name}.pdf");
+        "${directory.path}/History_${widget.user.name}.pdf");
     await file.writeAsBytes(bytes);
 
     _showShareDialog(file);
@@ -256,12 +278,12 @@ class _TesthistoryPageState extends State<TesthistoryPage> {
                   ),
                 ),
                 const PopupMenuItem(
-                  value: "history",
+                  value: "profile",
                   child: Row(
                     children: [
-                      Icon(Icons.history, color: Colors.black),
+                      Icon(Icons.person, color: Colors.black),
                       SizedBox(width: 8),
-                      Text("Test History",
+                      Text("My Profile",
                           style: TextStyle(color: Colors.black)),
                     ],
                   ),
@@ -281,7 +303,7 @@ class _TesthistoryPageState extends State<TesthistoryPage> {
                   value: "doctor",
                   child: Row(
                     children: [
-                      Icon(Icons.person, color: Colors.black),
+                      Icon(Icons.people, color: Colors.black),
                       SizedBox(width: 8),
                       Text("My Doctor",
                           style: TextStyle(color: Colors.black)),
@@ -291,20 +313,89 @@ class _TesthistoryPageState extends State<TesthistoryPage> {
               ],
             );
 
-            // if (selected == null) return;
-            if (selected != null) {
-              _handleNavigation(selected);
+            // // if (selected == null) return;
+            // if (selected != null) {
+            //   _handleNavigation(selected);
+            // }
+
+            if (selected == "home") {
+              Navigator.pushNamed(context, "/home");
+            }
+            // else if (selected == "history") {
+            //   // Navigator.pushNamed(context, "/testHistory");
+            //   Navigator.push(
+            //     context,
+            //     MaterialPageRoute(
+            //       builder: (_) => TesthistoryPage(
+            //         userMobile: widget.userMobile,
+            //         name: widget.name,
+            //         age: widget.age,
+            //         gender: widget.gender,
+            //         address: widget.address,
+            //         disease: widget.disease,
+            //       ),
+            //     ),
+            //   );
+            // }
+            else if (selected == "device") {
+              // Navigator.pushNamed(context, "/myDevice");
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => MyDevicesPage2(
+                    user: widget.user,
+                  ),
+                ),
+              );
+            }
+            else if (selected == "profile") {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => MyProfileScreen(
+                    user: widget.user,
+                  ),
+                ),
+              );
             }
 
-            // if (selected == "home") {
-            //   Navigator.pushNamed(context, "/home");
-            // } else if (selected == "history") {
-            //   Navigator.pushNamed(context, "/testHistory");
-            // } else if (selected == "device") {
-            //   Navigator.pushNamed(context, "/myDevice");
-            // } else if (selected == "doctor") {
-            //   Navigator.pushNamed(context, "/myDoctor");
-            // }
+
+            else if (selected == "doctor") {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => MyDoctorPage(
+                    user: widget.user,
+                  ),
+                ),
+              );
+            }
+
+        //     else if (selected == "doctor") {
+        //       Navigator.pushNamed(context, "/myDoctor");
+        //       // Navigator.push(
+        //       //   context,
+        //       //   MaterialPageRoute(
+        //       //     builder: (_) => MyDoctorPage(
+        //       //       mobile: widget.userMobile,
+        //       //       name: widget.name,
+        //       //       age: widget.age,
+        //       //       email: widget.email,
+        //       //       address: widget.address,
+        //       //       gender: widget.gender,
+        //       //       imageBase64: widget.imageBase64,
+        //       //       disease: widget.disease,
+        //       //       type: widget.type,
+        //       //       specialization: widget.specialization,
+        //       //       clinicName: clinicName,
+        //       //
+        //       //       // allDoctorsType: null,   // only used for admin
+        //       //       // 👇 This is the part you wanted
+        //       //       allDoctorsType: type.toLowerCase() == "admin" ? "aallDoct" : null,
+        //       //     ),
+        //       //   ),
+        //       // );
+        //     }
           },
         ),
         title: const Text(
@@ -344,7 +435,7 @@ class _TesthistoryPageState extends State<TesthistoryPage> {
             padding: const EdgeInsets.only(top: 90),
             child: StreamBuilder<DatabaseEvent>(
               stream: dbRef
-                  .child("Result/${widget.userMobile}")
+                  .child("Result/${targetMobile}")
                   .onValue,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {

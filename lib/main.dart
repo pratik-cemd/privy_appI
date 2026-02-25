@@ -46,7 +46,7 @@ class MyApp extends StatelessWidget {
         HomeScreen.routeName: (_) => const HomeScreen(),
         SignupScreen.routeName: (_) => const SignupScreen(),
         "/home": (context) => const HomeScreen(),
-        "/myprofile": (context) => const MyProfileScreen(),
+
         // "/myDevice": (context) => const MyDevicesPage2(userMobile: userMobile),
         // "/testHistory": (context) => const TesthistoryPage(userMobile: ),
         // "/myprofile": (context) => const MyProfileScreen(),
