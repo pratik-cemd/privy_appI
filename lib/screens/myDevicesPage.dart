@@ -957,6 +957,7 @@ import 'user_model.dart';
 
 import 'mydoctor.dart';
 import 'myprofile.dart';
+import 'test_count_screen.dart';
 
 class MyDevicesPage2 extends StatefulWidget {
   // final String userMobile;
@@ -998,6 +999,7 @@ class _MyDevicesPageState2 extends State<MyDevicesPage2> {
   final Guid rxUuid = Guid("0000FF01-0000-1000-8000-00805F9B34FB");
   final Guid txUuid = Guid("0000FF02-0000-1000-8000-00805F9B34FB");
 
+
   @override
   void initState() {
     super.initState();
@@ -1010,7 +1012,7 @@ class _MyDevicesPageState2 extends State<MyDevicesPage2> {
 
   /* -------------------- STARTUP VALIDATION -------------------- */
 
-  Future<void>   _startupValidation() async {
+  Future<void> _startupValidation() async {
     _setLoading(true);
 
     bool hasInternet = await _checkInternetConnection();
@@ -1033,6 +1035,7 @@ class _MyDevicesPageState2 extends State<MyDevicesPage2> {
     _setLoading(false);
     _listenToDevices();
   }
+
   Future<bool> _checkInternetConnection() async {
     try {
       final result = await InternetAddress.lookup('google.com');
@@ -1097,8 +1100,16 @@ class _MyDevicesPageState2 extends State<MyDevicesPage2> {
       }
     }
   }
+
   @override
   Widget build(BuildContext context) {
+    final isDoctor = widget.user.type == "doctor";
+
+    final historyTitle = isDoctor ? "Test Count’s" : "Test History";
+    final doctorTitle = isDoctor ? "My Patient" : "My Doctor";
+    final historyIcon = isDoctor ? Icons.account_balance_wallet : Icons.history;
+    final doctorIcon = isDoctor ? Icons.groups : Icons.person;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -1107,6 +1118,8 @@ class _MyDevicesPageState2 extends State<MyDevicesPage2> {
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.menu, color: Colors.white),
+
+
           onPressed: () async {
             final selected = await showMenu<String>(
               context: context,
@@ -1122,40 +1135,62 @@ class _MyDevicesPageState2 extends State<MyDevicesPage2> {
                     ],
                   ),
                 ),
-                const PopupMenuItem(
-                  value: "history",
-                  child: Row(
-                    children: [
-                      Icon(Icons.history, color: Colors.black),
-                      SizedBox(width: 8),
-                      Text("Test History",
-                          style: TextStyle(color: Colors.black)),
-                    ],
-                  ),
-                ),
                 // const PopupMenuItem(
-                //   value: "device",
+                //   value: "history",
                 //   child: Row(
                 //     children: [
-                //       Icon(Icons.devices, color: Colors.black),
+                //       Icon(Icons.history, color: Colors.black),
                 //       SizedBox(width: 8),
-                //       Text("My Device",
+                //       Text("Test History",
                 //           style: TextStyle(color: Colors.black)),
                 //     ],
                 //   ),
                 // ),
-                const PopupMenuItem(
-                  value: "doctor",
+                // // const PopupMenuItem(
+                // //   value: "device",
+                // //   child: Row(
+                // //     children: [
+                // //       Icon(Icons.devices, color: Colors.black),
+                // //       SizedBox(width: 8),
+                // //       Text("My Device",
+                // //           style: TextStyle(color: Colors.black)),
+                // //     ],
+                // //   ),
+                // // ),
+                // const PopupMenuItem(
+                //   value: "doctor",
+                //   child: Row(
+                //     children: [
+                //       Icon(Icons.people, color: Colors.black),
+                //       SizedBox(width: 8),
+                //       Text("My Doctor",
+                //           style: TextStyle(color: Colors.black)),
+                //     ],
+                //   ),
+                // ),
+                PopupMenuItem(
+                  value: "history",
                   child: Row(
                     children: [
-                      Icon(Icons.people, color: Colors.black),
-                      SizedBox(width: 8),
-                      Text("My Doctor",
-                          style: TextStyle(color: Colors.black)),
+                      Icon(historyIcon, color: Colors.black),
+                      const SizedBox(width: 8),
+                      Text(historyTitle,
+                          style: const TextStyle(color: Colors.black)),
                     ],
                   ),
                 ),
 
+                PopupMenuItem(
+                  value: "doctor",
+                  child: Row(
+                    children: [
+                      Icon(doctorIcon, color: Colors.black),
+                      const SizedBox(width: 8),
+                      Text(doctorTitle,
+                          style: const TextStyle(color: Colors.black)),
+                    ],
+                  ),
+                ),
 
                 const PopupMenuItem(
                   value: "profile",
@@ -1176,14 +1211,32 @@ class _MyDevicesPageState2 extends State<MyDevicesPage2> {
             if (selected == "home") {
               Navigator.pushNamed(context, "/home");
             }
+            // else if (selected == "history") {
+            //   // Navigator.pushNamed(context, "/testHistory");
+            //
+            //   Navigator.push(
+            //     context,
+            //     MaterialPageRoute(
+            //       builder: (_) => TesthistoryPage(user: widget.user),
+            //     ),
+            //   );
+            // }
             else if (selected == "history") {
-              // Navigator.pushNamed(context, "/testHistory");
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => TesthistoryPage(user: widget.user),
-                ),
-              );
+              if (widget.user.type == "doctor") {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => TestCountScreen(user: widget.user),
+                  ),
+                );
+              } else {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => TesthistoryPage(user: widget.user),
+                  ),
+                );
+              }
             }
             // else if (selected == "device") {
             //   Navigator.pushNamed(context, "/myDevice");
@@ -1196,9 +1249,10 @@ class _MyDevicesPageState2 extends State<MyDevicesPage2> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => MyDoctorPage(
-                    user: widget.user,
-                  ),
+                  builder: (_) =>
+                      MyDoctorPage(
+                        user: widget.user,
+                      ),
                 ),
               );
             }
@@ -1206,9 +1260,10 @@ class _MyDevicesPageState2 extends State<MyDevicesPage2> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => MyProfileScreen(
-                    user: widget.user,
-                  ),
+                  builder: (_) =>
+                      MyProfileScreen(
+                        user: widget.user,
+                      ),
                 ),
               );
             }
@@ -1246,16 +1301,21 @@ class _MyDevicesPageState2 extends State<MyDevicesPage2> {
           Padding(
             padding: const EdgeInsets.only(top: 100),
             child: StreamBuilder(
-              stream: dbRef.child("Devices/${widget.user.mobile}").onValue,
+              stream: dbRef
+                  .child("Devices/${widget.user.mobile}")
+                  .onValue,
               builder: (context, snapshot) {
-                if (!snapshot.hasData || snapshot.data?.snapshot.value == null) {
+                if (!snapshot.hasData ||
+                    snapshot.data?.snapshot.value == null) {
                   return const Center(
                     child: Text("No Device Found",
                         style: TextStyle(color: Colors.white)),
                   );
                 }
 
-                final data = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
+                final data = snapshot.data!.snapshot.value as Map<
+                    dynamic,
+                    dynamic>;
                 final keys = data.keys.toList();
 
                 return ListView.builder(
@@ -1280,6 +1340,13 @@ class _MyDevicesPageState2 extends State<MyDevicesPage2> {
                           _showPopup("Status", "Please Recharge");
                           return;
                         }
+
+                        // 🔹 If less than 10, show warning first
+                        if (testCount < 10) {
+                          bool proceed = await _showLowTestWarning(testCount);
+                          if (!proceed) return;
+                        }
+
                         await _connectSendAndRead(mac, key, "a2");
                       },
                       child: Card(
@@ -1292,9 +1359,12 @@ class _MyDevicesPageState2 extends State<MyDevicesPage2> {
                               Text("Device: $key"),
                               const SizedBox(height: 6),
                               Text(
-                                active ? "Active | Remaining: $testCount" : "Inactive",
+                                active
+                                    ? "Active | Remaining: $testCount"
+                                    : "Inactive",
                                 style: TextStyle(
-                                  color: active ? Colors.green : Colors.redAccent,
+                                  color: active ? Colors.green : Colors
+                                      .redAccent,
                                 ),
                               ),
                             ],
@@ -1326,7 +1396,9 @@ class _MyDevicesPageState2 extends State<MyDevicesPage2> {
       ),
     );
   }
-  void _checkTestCountChange(String deviceId,int currentTestCount,String status,String mac) async {
+
+  void _checkTestCountChange(String deviceId, int currentTestCount,
+      String status, String mac) async {
     if (status.toLowerCase() != "active") return;
 
     final previous = _previousCounts[deviceId];
@@ -1339,7 +1411,6 @@ class _MyDevicesPageState2 extends State<MyDevicesPage2> {
     final difference = (previous - currentTestCount).abs();
 
     if (difference > 1) {
-
       _showPopup(
         "Test Count Updated",
         "Device: $deviceId\nPrevious Test : $previous\nCurrent Test : $currentTestCount",
@@ -1363,7 +1434,8 @@ class _MyDevicesPageState2 extends State<MyDevicesPage2> {
     _previousCounts[deviceId] = currentTestCount;
   }
 
-  Future<void> _connectSendAndRead(String mac, String deviceName, String cmd) async {
+  Future<void> _connectSendAndRead(String mac, String deviceName,
+      String cmd) async {
     if (_busy || _isConnecting) return;
 
     _busy = true;
@@ -1377,7 +1449,8 @@ class _MyDevicesPageState2 extends State<MyDevicesPage2> {
       await _sendCommand(cmd);
     } catch (e) {
       print("Error" + e.toString());
-      _showPopup("Error", "Device not found.\nPlease check if the device is available and turned on.");
+      _showPopup("Error",
+          "Device not found.\nPlease check if the device is available and turned on.");
       await _disconnect();
     }
     _setLoading(false);
@@ -1546,7 +1619,7 @@ class _MyDevicesPageState2 extends State<MyDevicesPage2> {
   // }
 
 
-Future<void> _onDataReceived(List<int> data) async {
+  Future<void> _onDataReceived(List<int> data) async {
     final chunk = String.fromCharCodes(data);
     _rxBuffer += chunk;
 
@@ -1585,16 +1658,16 @@ Future<void> _onDataReceived(List<int> data) async {
         // await _decreaseTestCount(); // 🔥 decrease only here
         int count = int.tryParse(parts[2].trim()) ?? 0;
 
-              // await _updateResultDB(result, ref, count);
+        // await _updateResultDB(result, ref, count);
 
-              bool saved = await _updateResultDB(displayResult, refcesValue, count);
+        bool saved = await _updateResultDB(displayResult, refcesValue, count);
 
-              if (saved) {
-                // _showPopup("Success", "Result saved successfully.");
-                await _decreaseTestCount();
-              } else {
-                _showPopup("Error", "Failed to save result.");
-              }
+        if (saved) {
+          // _showPopup("Success", "Result saved successfully.");
+          await _decreaseTestCount();
+        } else {
+          _showPopup("Error", "Failed to save result.");
+        }
       }
 
       await _disconnectClean();
@@ -1638,8 +1711,10 @@ Future<void> _onDataReceived(List<int> data) async {
     _rxChar = null;
     _txChar = null;
   }
+
   Future<void> _decreaseTestCount() async {
-    final ref = dbRef.child("Devices/${widget.user.mobile}/$selectedDeviceId/testCount");
+    final ref = dbRef.child(
+        "Devices/${widget.user.mobile}/$selectedDeviceId/testCount");
 
     await ref.runTransaction((current) {
       if (current == null) return Transaction.success(0);
@@ -1669,10 +1744,12 @@ Future<void> _onDataReceived(List<int> data) async {
   //   }
   // }
 
-  Future<bool> _updateResultDB(String result, String refValue, int count) async {
+  Future<bool> _updateResultDB(String result, String refValue,
+      int count) async {
     final now = DateTime.now();
     final key =
-        "${now.day}-${now.month}-${now.year}_${now.hour}:${now.minute}:${now.second}";
+        "${now.day}-${now.month}-${now.year}_${now.hour}:${now.minute}:${now
+        .second}";
 
     final data = {
       "key": key,
@@ -1716,16 +1793,17 @@ Future<void> _onDataReceived(List<int> data) async {
 
       showDialog(
         context: context,
-        builder: (_) => AlertDialog(
-          title: Text(title),
-          content: Text(message),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("OK"),
-            )
-          ],
-        ),
+        builder: (_) =>
+            AlertDialog(
+              title: Text(title),
+              content: Text(message),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("OK"),
+                )
+              ],
+            ),
       );
     });
   }
@@ -1753,13 +1831,15 @@ Future<void> _onDataReceived(List<int> data) async {
           content: SizedBox(
             height: 500,
             child: FutureBuilder(
-              future: FlutterBluePlus.startScan(timeout: const Duration(seconds: 8)),
+              future: FlutterBluePlus.startScan(
+                  timeout: const Duration(seconds: 8)),
               builder: (_, __) {
                 FlutterBluePlus.scanResults.listen((results) {
                   for (var r in results) {
                     final name = r.device.name;
                     if (name.startsWith("SCINPY") &&
-                        !found.any((d) => d.device.remoteId == r.device.remoteId)) {
+                        !found.any((d) =>
+                        d.device.remoteId == r.device.remoteId)) {
                       found.add(r);
                     }
                   }
@@ -1774,7 +1854,8 @@ Future<void> _onDataReceived(List<int> data) async {
                       subtitle: Text(r.device.remoteId.str),
                       onTap: () async {
                         Navigator.pop(ctx);
-                        await _saveDeviceToFirebase(r.device.name, r.device.remoteId.str);
+                        await _saveDeviceToFirebase(
+                            r.device.name, r.device.remoteId.str);
                       },
                     );
                   },
@@ -1823,7 +1904,8 @@ Future<void> _onDataReceived(List<int> data) async {
     }
     _setLoading(true);
     try {
-      final List<Map<String, dynamic>> devicesToProcess = List.from(updatedNewTest);
+      final List<Map<String, dynamic>> devicesToProcess = List.from(
+          updatedNewTest);
 
       for (var device in devicesToProcess) {
         final deviceId = device["deviceId"];
@@ -1930,7 +2012,10 @@ Future<void> _onDataReceived(List<int> data) async {
 
       if (!deviceSnap.exists) return false;
 
-      final mac = deviceSnap.child("mac").value.toString();
+      final mac = deviceSnap
+          .child("mac")
+          .value
+          .toString();
 
       String formattedCount = testCount.toString().padLeft(3, '0');
       String command = "\$$formattedCount";
@@ -1963,7 +2048,9 @@ Future<void> _onDataReceived(List<int> data) async {
         if (_syncingDevices.contains(name)) continue;
 
         final last = _lastSyncAttempt[name];
-        if (last != null && DateTime.now().difference(last) < const Duration(seconds: 30)) continue;
+        if (last != null &&
+            DateTime.now().difference(last) < const Duration(seconds: 30))
+          continue;
 
         _lastSyncAttempt[name] = DateTime.now();
         _syncingDevices.add(name);
@@ -1988,5 +2075,57 @@ Future<void> _onDataReceived(List<int> data) async {
     _scanSub?.cancel();
     _scanSub = null;
     FlutterBluePlus.stopScan();
+  }
+
+  Future<bool> _showLowTestWarning(int remaining) async {
+    return await showDialog<bool>(
+      context: context,
+      builder: (context) =>
+          AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: const Row(
+              children: [
+                Icon(Icons.warning_amber_rounded, color: Colors.orange),
+                SizedBox(width: 8),
+                Text("Low Test Count"),
+              ],
+            ),
+            content: RichText(
+              text: TextSpan(
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 16,
+                ),
+                children: [
+                  const TextSpan(text: "Remaining tests: "),
+                  TextSpan(
+                    text: "$remaining",
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red,
+                      fontSize: 18,
+                    ),
+                  ),
+                  const TextSpan(
+                    text: "\n\nDo you want to continue?",
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text("Cancel"),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text("OK"),
+              ),
+            ],
+          ),
+    ) ??
+        false;
   }
 }

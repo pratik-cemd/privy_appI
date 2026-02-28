@@ -461,6 +461,7 @@ import 'mydoctor.dart';
 import 'myDevicesPage.dart';
 import "testHistory.dart";
 import 'user_model.dart';
+import 'test_count_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   static const routeName = '/home';
@@ -692,7 +693,10 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.only(top: 150),
             child: Column(
               children: [
-                _menuButton("Test History", Icons.history, _onTestHistory),
+                // _menuButton("Test History", Icons.history, _onTestHistory),
+                currentUser!.type == "doctor"
+                    ? _menuButton("Test Count's", Icons.account_balance_wallet, _onTestCount)
+                    : _menuButton("Test History", Icons.history, _onTestHistory),
                 const SizedBox(height: 12),
                 _menuButton("My Device   ", Icons.devices, _onMyDevice),
                 const SizedBox(height: 12),
@@ -702,7 +706,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       : currentUser!.type == "doctor"
                       ? "My Patient  "
                       : "My Doctor   ",
-                  Icons.people,
+                  Icons.groups,
                   _onMyDoctor,
                 ),
                 const SizedBox(height: 12),
@@ -787,6 +791,30 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  // void _onTestCount() {
+  //   showDialog(
+  //     context: context,
+  //     builder: (_) => AlertDialog(
+  //       title: const Text("Remaining Test Count"),
+  //       content: Text(currentUser!.count),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () => Navigator.pop(context),
+  //           child: const Text("OK"),
+  //         )
+  //       ],
+  //     ),
+  //   );
+  // }
+
+  void _onTestCount() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TestCountScreen(user: currentUser!),
+      ),
+    );
+  }
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();

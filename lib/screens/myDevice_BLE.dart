@@ -253,6 +253,7 @@ class _MyDevicesPageStateBLE extends State<MyDevicesPageBLE> {
     // setState(() => status = "Connecting...");
     try {
       await _device!.connect(
+        license: License.commercial,
         autoConnect: false,
         timeout: const Duration(seconds: 10),
       );

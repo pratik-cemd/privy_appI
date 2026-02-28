@@ -7,6 +7,8 @@ import 'myDevicesPage.dart';
 import "testHistory.dart";
 import 'user_model.dart';
 import 'dart:convert';
+import 'package:intl/intl.dart';
+import 'test_count_screen.dart';
 
 class MyDoctorPage extends StatefulWidget {
   final UserModel user;
@@ -368,6 +370,11 @@ class _MyDoctorPageState extends State<MyDoctorPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDoctor = widget.user.type == "doctor";
+
+    final historyTitle = isDoctor ? "Test Count’s" : "Test History";
+    final historyIcon = isDoctor ? Icons.account_balance_wallet : Icons.history;
+
     void showUserDetails() {
       showDialog(
         context: context,
@@ -413,15 +420,32 @@ class _MyDoctorPageState extends State<MyDoctorPage> {
             if (value == "home") {
               Navigator.pushNamed(context, "/home");
             }
+            // else if (value == "history") {
+            //   Navigator.push(
+            //     context,
+            //     MaterialPageRoute(
+            //       builder: (_) => TesthistoryPage(
+            //         user:widget.user,
+            //       ),
+            //     ),
+            //   );
+            // }
             else if (value == "history") {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => TesthistoryPage(
-                    user:widget.user,
+              if (widget.user.type == "doctor") {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => TestCountScreen(user: widget.user),
                   ),
-                ),
-              );
+                );
+              } else {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => TesthistoryPage(user: widget.user),
+                  ),
+                );
+              }
             }
             else if (value == "device") {
               Navigator.push(
@@ -442,8 +466,8 @@ class _MyDoctorPageState extends State<MyDoctorPage> {
               );
             }
           },
-          itemBuilder: (context) => const [
-            PopupMenuItem(
+          itemBuilder: (context) => [
+            const PopupMenuItem(
               value: "home",
               child: Row(
                 children: [
@@ -453,17 +477,28 @@ class _MyDoctorPageState extends State<MyDoctorPage> {
                 ],
               ),
             ),
+            // PopupMenuItem(
+            //   value: "history",
+            //   child: Row(
+            //     children: [
+            //       Icon(Icons.history, color: Colors.black),
+            //       SizedBox(width: 8),
+            //       Text("Test History", style: TextStyle(color: Colors.black)),
+            //     ],
+            //   ),
+            // ),
             PopupMenuItem(
               value: "history",
               child: Row(
                 children: [
-                  Icon(Icons.history, color: Colors.black),
-                  SizedBox(width: 8),
-                  Text("Test History", style: TextStyle(color: Colors.black)),
+                  Icon(historyIcon, color: Colors.black),
+                  const SizedBox(width: 8),
+                   Text(historyTitle,
+                      style: const TextStyle(color: Colors.black)),
                 ],
               ),
             ),
-            PopupMenuItem(
+            const PopupMenuItem(
               value: "device",
               child: Row(
                 children: [
@@ -473,7 +508,7 @@ class _MyDoctorPageState extends State<MyDoctorPage> {
                 ],
               ),
             ),
-            PopupMenuItem(
+            const PopupMenuItem(
               value: "profile",
               child: Row(
                 children: [
@@ -1286,6 +1321,134 @@ class _MyDoctorPageState extends State<MyDoctorPage> {
       },
     );
   }
+  // void _showAddDeviceTestDialog(String patientMobile,String deviceId,int currentTest) async {
+  //
+  //   final doctorSnap = await FirebaseDatabase.instance
+  //       .ref("users/doctor/${widget.user.mobile}/availableTest")
+  //       .get();
+  //
+  //   int doctorAvailable =
+  //       int.tryParse(doctorSnap.value?.toString() ?? "0") ?? 0;
+  //
+  //   final TextEditingController controller =
+  //   TextEditingController(text: "0");
+  //
+  //   showDialog(
+  //     context: context,
+  //     builder: (_) => AlertDialog(
+  //       title: Text("Device: $deviceId"),
+  //
+  //       content: StatefulBuilder(
+  //         builder: (context, setStateDialog) {
+  //
+  //           int addCount =
+  //               int.tryParse(controller.text) ?? 0;
+  //
+  //           void updateValue(int value) {
+  //             if (value < 0) value = 0;
+  //             if (value > doctorAvailable) value = doctorAvailable;
+  //
+  //             controller.text = value.toString();
+  //             controller.selection = TextSelection.fromPosition(
+  //               TextPosition(offset: controller.text.length),
+  //             );
+  //             setStateDialog(() {});
+  //           }
+  //
+  //           return Column(
+  //             mainAxisSize: MainAxisSize.min,
+  //             crossAxisAlignment: CrossAxisAlignment.start,
+  //             children: [
+  //
+  //               Text("Current Test: $currentTest"),
+  //               const SizedBox(height: 5),
+  //               Text("Doctor Available: $doctorAvailable"),
+  //               const SizedBox(height: 20),
+  //
+  //               const Text("Add Test:"),
+  //
+  //               Row(
+  //                 children: [
+  //
+  //                   IconButton(
+  //                     icon: const Icon(Icons.remove),
+  //                     onPressed: () {
+  //                       updateValue(addCount - 1);
+  //                     },
+  //                   ),
+  //
+  //                   Expanded(
+  //                     child: TextField(
+  //                       controller: controller,
+  //                       keyboardType: TextInputType.number,
+  //                       textAlign: TextAlign.center,
+  //                       decoration: const InputDecoration(
+  //                         border: OutlineInputBorder(),
+  //                         isDense: true,
+  //                       ),
+  //                       onChanged: (value) {
+  //                         int entered =
+  //                             int.tryParse(value) ?? 0;
+  //                         updateValue(entered);
+  //                       },
+  //                     ),
+  //                   ),
+  //
+  //                   IconButton(
+  //                     icon: const Icon(Icons.add),
+  //                     onPressed: () {
+  //                       updateValue(addCount + 1);
+  //                     },
+  //                   ),
+  //                 ],
+  //               ),
+  //             ],
+  //           );
+  //         },
+  //       ),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () async {
+  //
+  //             int addCount =
+  //                 int.tryParse(controller.text) ?? 0;
+  //
+  //             if (addCount <= 0) {
+  //               Navigator.pop(context);
+  //               return;
+  //             }
+  //
+  //             if (addCount > doctorAvailable) {
+  //               ScaffoldMessenger.of(context).showSnackBar(
+  //                 const SnackBar(
+  //                     content: Text("Not enough available tests")),
+  //               );
+  //               return;
+  //             }
+  //
+  //             // Update device test count
+  //             await FirebaseDatabase.instance
+  //                 .ref("Devices/$patientMobile/$deviceId")
+  //                 .update({
+  //               "testCount": currentTest + addCount,
+  //             });
+  //
+  //             // Deduct from doctor
+  //             await FirebaseDatabase.instance
+  //                 .ref("users/doctor/${widget.user.mobile}")
+  //                 .update({
+  //               "availableTest": doctorAvailable - addCount,
+  //             });
+  //
+  //             Navigator.pop(context);
+  //           },
+  //           child: const Text("OK"),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
+
   void _showAddDeviceTestDialog(String patientMobile,String deviceId,int currentTest) async {
 
     final doctorSnap = await FirebaseDatabase.instance
@@ -1295,19 +1458,34 @@ class _MyDoctorPageState extends State<MyDoctorPage> {
     int doctorAvailable =
         int.tryParse(doctorSnap.value?.toString() ?? "0") ?? 0;
 
+
+
     final TextEditingController controller =
     TextEditingController(text: "0");
 
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text("Device: $deviceId"),
-
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Recharge Device",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              "Device ID: $deviceId",
+              style: const TextStyle(fontSize: 13, color: Colors.grey),
+            ),
+          ],
+        ),
         content: StatefulBuilder(
           builder: (context, setStateDialog) {
-
-            int addCount =
-                int.tryParse(controller.text) ?? 0;
+            int addCount = int.tryParse(controller.text) ?? 0;
 
             void updateValue(int value) {
               if (value < 0) value = 0;
@@ -1325,45 +1503,65 @@ class _MyDoctorPageState extends State<MyDoctorPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
 
-                Text("Current Test: $currentTest"),
-                const SizedBox(height: 5),
-                Text("Doctor Available: $doctorAvailable"),
+                // 📊 Info Card
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    children: [
+                      _infoRow("Patient Current Test", "$currentTest"),
+                      const SizedBox(height: 6),
+                      _infoRow("Doctor Available Test", "$doctorAvailable"),
+                    ],
+                  ),
+                ),
+
                 const SizedBox(height: 20),
 
-                const Text("Add Test:"),
+                const Text(
+                  "Add Test",
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 8),
 
+                // ➖ ➕ Counter
                 Row(
                   children: [
-
                     IconButton(
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.grey.shade200,
+                      ),
                       icon: const Icon(Icons.remove),
-                      onPressed: () {
-                        updateValue(addCount - 1);
-                      },
+                      onPressed: () => updateValue(addCount - 1),
                     ),
-
+                    const SizedBox(width: 8),
                     Expanded(
                       child: TextField(
                         controller: controller,
                         keyboardType: TextInputType.number,
                         textAlign: TextAlign.center,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          isDense: true,
+                        decoration: InputDecoration(
+                          contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
                         onChanged: (value) {
-                          int entered =
-                              int.tryParse(value) ?? 0;
+                          int entered = int.tryParse(value) ?? 0;
                           updateValue(entered);
                         },
                       ),
                     ),
-
+                    const SizedBox(width: 8),
                     IconButton(
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.grey.shade200,
+                      ),
                       icon: const Icon(Icons.add),
-                      onPressed: () {
-                        updateValue(addCount + 1);
-                      },
+                      onPressed: () => updateValue(addCount + 1),
                     ),
                   ],
                 ),
@@ -1371,49 +1569,398 @@ class _MyDoctorPageState extends State<MyDoctorPage> {
             );
           },
         ),
+        actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         actions: [
           TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            // onPressed: () async {
+            //   // keep your existing OK logic here
+            //
+            // },
             onPressed: () async {
 
-              int addCount =
-                  int.tryParse(controller.text) ?? 0;
+              int addCount = int.tryParse(controller.text) ?? 0;
 
               if (addCount <= 0) {
-                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Enter valid test count")),
+                );
                 return;
               }
 
               if (addCount > doctorAvailable) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content: Text("Not enough available tests")),
+                  const SnackBar(content: Text("Not enough available tests")),
                 );
                 return;
               }
 
-              // Update device test count
-              await FirebaseDatabase.instance
-                  .ref("Devices/$patientMobile/$deviceId")
-                  .update({
-                "testCount": currentTest + addCount,
-              });
+              int newPatientTotal = currentTest + addCount;
+              int newDoctorAvailable = doctorAvailable - addCount;
 
-              // Deduct from doctor
-              await FirebaseDatabase.instance
-                  .ref("users/doctor/${widget.user.mobile}")
-                  .update({
-                "availableTest": doctorAvailable - addCount,
-              });
+              // 🔹 Open Summary Dialog
+              showDialog(
+                context: context,
+                builder: (_) => AlertDialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  title: const Text(
+                    "Recharge Summary",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
 
-              Navigator.pop(context);
+                      _summaryRow("Device ID", deviceId),
+                      const SizedBox(height: 8),
+
+                      _summaryRow("Recharge Test", addCount.toString()),
+
+                      const Divider(height: 24),
+
+                      _summaryRow("Patient Old Test", currentTest.toString()),
+                      _summaryRow("Patient New Test", newPatientTotal.toString()),
+
+                      const SizedBox(height: 12),
+
+                      _summaryRow("Doctor Old Available", doctorAvailable.toString()),
+                      _summaryRow("Doctor New Available", newDoctorAvailable.toString()),
+                    ],
+                  ),
+                  actions: [
+
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context); // close summary only
+                      },
+                      child: const Text("Back"),
+                    ),
+
+                    ElevatedButton(
+                      // onPressed: () async {
+                      //
+                      //   // 🔹 Update Patient Device
+                      //   await FirebaseDatabase.instance
+                      //       .ref("Devices/$patientMobile/$deviceId")
+                      //       .update({
+                      //     "testCount": newPatientTotal,
+                      //   });
+                      //
+                      //   // 🔹 Update Doctor Available
+                      //   await FirebaseDatabase.instance
+                      //       .ref("users/doctor/${widget.user.mobile}")
+                      //       .update({
+                      //     "availableTest": newDoctorAvailable,
+                      //   });
+                      //
+                      //   // 🔹 Save Recharge Log
+                      //   // String key =
+                      //   // DateTime.now().millisecondsSinceEpoch.toString();
+                      //     // 🔹 Save Recharge Log
+                      //   String dateTimeKey =DateFormat("dd-MM-yy_hh:mm a").format(DateTime.now());
+                      //   await FirebaseDatabase.instance
+                      //       .ref("Recharge/patient/$patientMobile/$dateTimeKey")
+                      //       .set({
+                      //     "p_id": deviceId,
+                      //     "d_mob": widget.user.mobile,
+                      //     "add": addCount,
+                      //     "p_OldTest": currentTest,
+                      //     "p_NewTest": newPatientTotal,
+                      //     "d_Old": doctorAvailable,
+                      //     "d_New": newDoctorAvailable,
+                      //     "p_mob": patientMobile,   // ✅ Added patient number
+                      //   });
+                      //
+                      //   Navigator.pop(context); // close summary dialog
+                      //   Navigator.pop(context); // close main dialog
+                      //
+                      //   ScaffoldMessenger.of(context).showSnackBar(
+                      //     const SnackBar(content: Text("Recharge Successful")),
+                      //   );
+                      // },
+
+                      onPressed: () async {
+
+                        // 🔹 Show Loading Dialog
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (_) => const AlertDialog(
+                            content: Row(
+                              children: [
+                                CircularProgressIndicator(),
+                                SizedBox(width: 20),
+                                Text("Updating..."),
+                              ],
+                            ),
+                          ),
+                        );
+
+                        try {
+
+                          // 🔹 Update Patient Device
+                          await FirebaseDatabase.instance
+                              .ref("Devices/$patientMobile/$deviceId")
+                              .update({
+                            "testCount": newPatientTotal,
+                          });
+
+                          // 🔹 Update Doctor
+                          await FirebaseDatabase.instance
+                              .ref("users/doctor/${widget.user.mobile}")
+                              .update({
+                            "availableTest": newDoctorAvailable,
+                          });
+
+                          // 🔹 Save Recharge Log
+                          String dateTimeKey =DateFormat("dd-MM-yy_hh:mm a").format(DateTime.now());
+                          await FirebaseDatabase.instance
+                              .ref("Recharge/patient/$patientMobile/$dateTimeKey")
+                              .set({
+                            "p_id": deviceId,
+                            "d_mob": widget.user.mobile,
+                            "p_mob": patientMobile,
+                            "add": addCount,
+                            "p_Old": currentTest,
+                            "p_New": newPatientTotal,
+                            "d_Old": doctorAvailable,
+                            "d_New": newDoctorAvailable,
+                          });
+
+                          // 🔹 Close Loading
+                          Navigator.pop(context);
+
+                          // 🔹 Close Summary
+                          Navigator.pop(context);
+
+                          // 🔹 Close Main Dialog
+                          Navigator.pop(context);
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Test Added Successfully"),
+                            ),
+                          );
+
+                        } catch (e) {
+
+                          Navigator.pop(context); // close loading
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Something went wrong"),
+                            ),
+                          );
+                        }
+                      },
+
+                      child: const Text("OK"),
+                    ),
+                  ],
+                ),
+              );
             },
-            child: const Text("OK"),
+            child: const Text("Continue"),
           ),
         ],
       ),
     );
+
+    // showDialog(
+    //   context: context,
+    //   builder: (_) => AlertDialog(
+    //     title: Text("Device: $deviceId"),
+    //     content: StatefulBuilder(
+    //       builder: (context, setStateDialog) {
+    //
+    //         int addCount = int.tryParse(controller.text) ?? 0;
+    //
+    //         void updateValue(int value) {
+    //           if (value < 0) value = 0;
+    //           if (value > doctorAvailable) value = doctorAvailable;
+    //
+    //           controller.text = value.toString();
+    //           controller.selection = TextSelection.fromPosition(
+    //             TextPosition(offset: controller.text.length),
+    //           );
+    //           setStateDialog(() {});
+    //         }
+    //
+    //         return Column(
+    //           mainAxisSize: MainAxisSize.min,
+    //           crossAxisAlignment: CrossAxisAlignment.start,
+    //           children: [
+    //
+    //             Text("Current Patient Test: $currentTest"),
+    //             const SizedBox(height: 5),
+    //             Text("Doctor Available Test: $doctorAvailable"),
+    //             const SizedBox(height: 20),
+    //
+    //             const Text("Add Test:"),
+    //
+    //             Row(
+    //               children: [
+    //                 IconButton(
+    //                   icon: const Icon(Icons.remove),
+    //                   onPressed: () {
+    //                     updateValue(addCount - 1);
+    //                   },
+    //                 ),
+    //                 Expanded(
+    //                   child: TextField(
+    //                     controller: controller,
+    //                     keyboardType: TextInputType.number,
+    //                     textAlign: TextAlign.center,
+    //                     decoration: const InputDecoration(
+    //                       border: OutlineInputBorder(),
+    //                       isDense: true,
+    //                     ),
+    //                     onChanged: (value) {
+    //                       int entered =
+    //                           int.tryParse(value) ?? 0;
+    //                       updateValue(entered);
+    //                     },
+    //                   ),
+    //                 ),
+    //                 IconButton(
+    //                   icon: const Icon(Icons.add),
+    //                   onPressed: () {
+    //                     updateValue(addCount + 1);
+    //                   },
+    //                 ),
+    //               ],
+    //             ),
+    //           ],
+    //         );
+    //       },
+    //     ),
+    //     actions: [
+    //       TextButton(
+    //         onPressed: () async {
+    //
+    //           int addCount =
+    //               int.tryParse(controller.text) ?? 0;
+    //
+    //           if (addCount <= 0) {
+    //             Navigator.pop(context);
+    //             return;
+    //           }
+    //
+    //           if (addCount > doctorAvailable) {
+    //             ScaffoldMessenger.of(context).showSnackBar(
+    //               const SnackBar(
+    //                   content: Text("Not enough available tests")),
+    //             );
+    //             return;
+    //           }
+    //
+    //           int newPatientTotal = currentTest + addCount;
+    //           int newDoctorAvailable = doctorAvailable - addCount;
+    //
+    //           // 🔹 Confirmation Dialog
+    //           showDialog(
+    //             context: context,
+    //             builder: (_) => AlertDialog(
+    //               title: const Text("Confirm Update"),
+    //               content: Column(
+    //                 mainAxisSize: MainAxisSize.min,
+    //                 crossAxisAlignment: CrossAxisAlignment.start,
+    //                 children: [
+    //                   Text("Recharge Test: $addCount"),
+    //                   const SizedBox(height: 10),
+    //                   Text("Patient Old Test: $currentTest"),
+    //                   Text("Patient New Test: $newPatientTotal"),
+    //                   const SizedBox(height: 10),
+    //                   Text("Doctor Old Available: $doctorAvailable"),
+    //                   Text("Doctor New Available: $newDoctorAvailable"),
+    //                 ],
+    //               ),
+    //               actions: [
+    //
+    //                 TextButton(
+    //                   onPressed: () {
+    //                     Navigator.pop(context); // close confirm
+    //                   },
+    //                   child: const Text("Cancel"),
+    //                 ),
+    //
+    //                 ElevatedButton(
+    //                   onPressed: () async {
+    //
+    //                     // 🔹 Update Device
+    //                     await FirebaseDatabase.instance
+    //                         .ref("Devices/$patientMobile/$deviceId")
+    //                         .update({
+    //                       "testCount": newPatientTotal,
+    //                     });
+    //
+    //                     // 🔹 Update Doctor
+    //                     await FirebaseDatabase.instance
+    //                         .ref("users/doctor/${widget.user.mobile}")
+    //                         .update({
+    //                       "availableTest": newDoctorAvailable,
+    //                     });
+    //
+    //                     // 🔹 Save Recharge Log
+    //                     String dateTimeKey =
+    //                     DateFormat("dd-MM-yy_hh:mm a")
+    //                         .format(DateTime.now());
+    //
+    //                     await FirebaseDatabase.instance
+    //                         .ref("Recharge/patient/$patientMobile/$dateTimeKey")
+    //                         .set({
+    //
+    //                       "id": deviceId,
+    //                       "add": addCount,
+    //                       "d_name": widget.user.mobile,
+    //                       "p_OldTest": currentTest,
+    //                       "p_NewTest": newPatientTotal,
+    //                       "d_Old": doctorAvailable,
+    //                       "d_New": newDoctorAvailable,
+    //                       });
+    //
+    //                     Navigator.pop(context); // close confirm
+    //                     Navigator.pop(context); // close first dialog
+    //                   },
+    //                   child: const Text("Confirm"),
+    //                 ),
+    //               ],
+    //             ),
+    //           );
+    //         },
+    //         child: const Text("OK"),
+    //       ),
+    //     ],
+    //   ),
+    // );
   }
 
+  Widget _infoRow(String title, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(title),
+        Text(
+          value,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
   Future<void> _showPatientDetailsDialog(String mobile) async {
     final snap = await FirebaseDatabase.instance
         .ref("users/patient/$mobile")
@@ -1445,6 +1992,21 @@ class _MyDoctorPageState extends State<MyDoctorPage> {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text("Close"),
+          ),
+        ],
+      ),
+    );
+  }
+  Widget _summaryRow(String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title),
+          Text(
+            value,
+            style: const TextStyle(fontWeight: FontWeight.bold),
           ),
         ],
       ),

@@ -215,6 +215,7 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
     _device = BluetoothDevice.fromId(mac);
     try {
       await _device!.connect(
+        license: License.commercial,
         autoConnect: false,
         timeout: const Duration(seconds: 10),
       );
@@ -254,6 +255,7 @@ class _MyDevicesPageState extends State<MyDevicesPage> {
     }
 
     await _device!.connect(
+      license: License.commercial,
       autoConnect: false,
       timeout: const Duration(seconds: 10),
     );

@@ -7,6 +7,7 @@ import 'mydoctor.dart';
 import 'user_model.dart';
 import 'myDevicesPage.dart';
 import 'testHistory.dart';
+import 'test_count_screen.dart';
 
 // class MyProfileScreen extends StatefulWidget {
 //   const MyProfileScreen({Key? key}) : super(key: key);
@@ -218,6 +219,13 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDoctor = widget.user.type == "doctor";
+
+    final historyTitle = isDoctor ? "Test Count’s" : "Test History";
+    final doctorTitle = isDoctor ? "My Patient" : "My Doctor";
+    final historyIcon = isDoctor ? Icons.account_balance_wallet : Icons.history;
+    final doctorIcon = isDoctor ? Icons.groups : Icons.person;
+
     return Scaffold(
       backgroundColor: const Color(0xff6D8EBE),
       floatingActionButton: isEditMode
@@ -247,17 +255,34 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                       if (value == "home") {
                         Navigator.pushNamed(context, "/home");
                       }
-                      else if (value == "history") {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => TesthistoryPage(
-                              user:widget.user,
-                            ),
-                          ),
-                        );
-                      }
+                      // else if (value == "history") {
+                      //   Navigator.push(
+                      //     context,
+                      //     MaterialPageRoute(
+                      //       builder: (_) => TesthistoryPage(
+                      //         user:widget.user,
+                      //       ),
+                      //     ),
+                      //   );
+                      // }
 
+                      else if (value == "history") {
+                        if (widget.user.type == "doctor") {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => TestCountScreen(user: widget.user),
+                            ),
+                          );
+                        } else {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => TesthistoryPage(user: widget.user),
+                            ),
+                          );
+                        }
+                      }
                       else if (value == "device") {
                         Navigator.push(
                           context,
@@ -292,17 +317,28 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                                   TextStyle(color: Colors.black)),
                             ],
                           )),
+                      // PopupMenuItem(
+                      //     value: "history",
+                      //     child: Row(
+                      //       children: const [
+                      //         Icon(Icons.history, color: Colors.black),
+                      //         SizedBox(width: 8),
+                      //         Text("Test History",
+                      //             style:
+                      //             TextStyle(color: Colors.black)),
+                      //       ],
+                      //     )),
                       PopupMenuItem(
-                          value: "history",
-                          child: Row(
-                            children: const [
-                              Icon(Icons.history, color: Colors.black),
-                              SizedBox(width: 8),
-                              Text("Test History",
-                                  style:
-                                  TextStyle(color: Colors.black)),
-                            ],
-                          )),
+                        value: "history",
+                        child: Row(
+                          children: [
+                            Icon(historyIcon, color: Colors.black),
+                            const SizedBox(width: 8),
+                            Text(historyTitle,
+                                style: const TextStyle(color: Colors.black)),
+                          ],
+                        ),
+                      ),
                       PopupMenuItem(
                           value: "device",
                           child: Row(
@@ -325,17 +361,29 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                       //   )),
 
 
+                      // PopupMenuItem(
+                      //     value: "doctor",
+                      //     child: Row(
+                      //       children: const [
+                      //         Icon(Icons.people, color: Colors.black),
+                      //         SizedBox(width: 8),
+                      //         Text("My Doctor",
+                      //             style:
+                      //             TextStyle(color: Colors.black)),
+                      //       ],
+                      //     )),
+
                       PopupMenuItem(
-                          value: "doctor",
-                          child: Row(
-                            children: const [
-                              Icon(Icons.people, color: Colors.black),
-                              SizedBox(width: 8),
-                              Text("My Doctor",
-                                  style:
-                                  TextStyle(color: Colors.black)),
-                            ],
-                          )),
+                        value: "doctor",
+                        child: Row(
+                          children: [
+                            Icon(doctorIcon, color: Colors.black),
+                            const SizedBox(width: 8),
+                            Text(doctorTitle,
+                                style: const TextStyle(color: Colors.black)),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
 
