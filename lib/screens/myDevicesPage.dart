@@ -958,6 +958,7 @@ import 'user_model.dart';
 import 'mydoctor.dart';
 import 'myprofile.dart';
 import 'test_count_screen.dart';
+import 'package:intl/intl.dart';
 
 class MyDevicesPage2 extends StatefulWidget {
   // final String userMobile;
@@ -1747,9 +1748,11 @@ class _MyDevicesPageState2 extends State<MyDevicesPage2> {
   Future<bool> _updateResultDB(String result, String refValue,
       int count) async {
     final now = DateTime.now();
-    final key =
-        "${now.day}-${now.month}-${now.year}_${now.hour}:${now.minute}:${now
-        .second}";
+    // final key =
+    //     "${now.day}-${now.month}-${now.year}_${now.hour}:${now.minute}:${now
+    //     .second}";
+
+    final key = DateFormat('dd-MM-yy_HH:mm:ss').format(now);
 
     final data = {
       "key": key,

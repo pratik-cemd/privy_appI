@@ -753,7 +753,14 @@ class _HomeScreenState extends State<HomeScreen> {
       MaterialPageRoute(
         builder: (_) => TesthistoryPage(user: currentUser!),
       ),
-    );
+
+    ).then((updatedUser) {
+      if (updatedUser != null && mounted) {
+        setState(() {
+          currentUser = updatedUser;
+        });
+      }
+    });
   }
 
   void _onMyDevice() {
