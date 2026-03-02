@@ -2178,16 +2178,16 @@ class _TesthistoryPageState extends State<TesthistoryPage> {
             //   style: const pw.TextStyle(fontSize: 10),
             // ),
 
-            /// Page number aligned to right
-            pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.end,
-              children: [
-                pw.Text(
-                  "Page No. ${context.pageNumber} / ${context.pagesCount}",
-                  style: const pw.TextStyle(fontSize: 10),
-                ),
-              ],
-            ),
+            // /// Page number aligned to right
+            // pw.Row(
+            //   mainAxisAlignment: pw.MainAxisAlignment.end,
+            //   children: [
+            //     pw.Text(
+            //       "Page No. ${context.pageNumber} / ${context.pagesCount}",
+            //       style: const pw.TextStyle(fontSize: 10),
+            //     ),
+            //   ],
+            // ),
           ],
         ),
 
@@ -2655,6 +2655,146 @@ class _TesthistoryPageState extends State<TesthistoryPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
+
+              // 👇 Add this
+              leading: IconButton(
+                icon: const Icon(Icons.menu, color: Colors.white),
+                onPressed: () async {
+                  final selected = await showMenu<String>(
+                    context: context,
+                    position: const RelativeRect.fromLTRB(0, 80, 0, 0),
+                    items: [
+                      const PopupMenuItem(
+                        value: "home",
+                        child: Row(
+                          children: [
+                            Icon(Icons.home, color: Colors.black),
+                            SizedBox(width: 8),
+                            Text("Home", style: TextStyle(color: Colors.black)),
+                          ],
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: "profile",
+                        child: Row(
+                          children: [
+                            Icon(Icons.person, color: Colors.black),
+                            SizedBox(width: 8),
+                            Text("My Profile",
+                                style: TextStyle(color: Colors.black)),
+                          ],
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: "device",
+                        child: Row(
+                          children: [
+                            Icon(Icons.devices, color: Colors.black),
+                            SizedBox(width: 8),
+                            Text("My Device",
+                                style: TextStyle(color: Colors.black)),
+                          ],
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: "doctor",
+                        child: Row(
+                          children: [
+                            Icon(Icons.people, color: Colors.black),
+                            SizedBox(width: 8),
+                            Text("My Doctor",
+                                style: TextStyle(color: Colors.black)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+
+                  // // if (selected == null) return;
+                  // if (selected != null) {
+                  //   _handleNavigation(selected);
+                  // }
+
+                  if (selected == "home") {
+                    Navigator.pushNamed(context, "/home");
+                  }
+                  // else if (selected == "history") {
+                  //   // Navigator.pushNamed(context, "/testHistory");
+                  //   Navigator.push(
+                  //     context,
+                  //     MaterialPageRoute(
+                  //       builder: (_) => TesthistoryPage(
+                  //         userMobile: widget.userMobile,
+                  //         name: widget.name,
+                  //         age: widget.age,
+                  //         gender: widget.gender,
+                  //         address: widget.address,
+                  //         disease: widget.disease,
+                  //       ),
+                  //     ),
+                  //   );
+                  // }
+                  else if (selected == "device") {
+                    // Navigator.pushNamed(context, "/myDevice");
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => MyDevicesPage2(
+                          user: widget.user,
+                        ),
+                      ),
+                    );
+                  }
+                  else if (selected == "profile") {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => MyProfileScreen(
+                          user: widget.user,
+                        ),
+                      ),
+                    );
+                  }
+
+
+                  else if (selected == "doctor") {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => MyDoctorPage(
+                          user: widget.user,
+                        ),
+                      ),
+                    );
+                  }
+
+                  //     else if (selected == "doctor") {
+                  //       Navigator.pushNamed(context, "/myDoctor");
+                  //       // Navigator.push(
+                  //       //   context,
+                  //       //   MaterialPageRoute(
+                  //       //     builder: (_) => MyDoctorPage(
+                  //       //       mobile: widget.userMobile,
+                  //       //       name: widget.name,
+                  //       //       age: widget.age,
+                  //       //       email: widget.email,
+                  //       //       address: widget.address,
+                  //       //       gender: widget.gender,
+                  //       //       imageBase64: widget.imageBase64,
+                  //       //       disease: widget.disease,
+                  //       //       type: widget.type,
+                  //       //       specialization: widget.specialization,
+                  //       //       clinicName: clinicName,
+                  //       //
+                  //       //       // allDoctorsType: null,   // only used for admin
+                  //       //       // 👇 This is the part you wanted
+                  //       //       allDoctorsType: type.toLowerCase() == "admin" ? "aallDoct" : null,
+                  //       //     ),
+                  //       //   ),
+                  //       // );
+                  //     }
+                },
+              ),
         title: const Text(
           "Test History",
           style: TextStyle(color: Colors.white),
