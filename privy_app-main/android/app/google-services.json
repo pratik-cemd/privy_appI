@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "1054409979975",
+    "firebase_url": "https://privy-20773-default-rtdb.firebaseio.com",
+    "project_id": "privy-20773",
+    "storage_bucket": "privy-20773.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1054409979975:android:b7055312034ed584e35962",
+        "android_client_info": {
+          "package_name": "com.example.privy_181125"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_BmOfQBJvwNj0dhK9PZAc6dPvI3WyF6s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1054409979975:android:773d10eb4b7b28c6e35962",
+        "android_client_info": {
+          "package_name": "com.example.privy_2009"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_BmOfQBJvwNj0dhK9PZAc6dPvI3WyF6s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
