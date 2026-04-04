@@ -9,7 +9,11 @@ plugins {
 }
 
 android {
+<<<<<<< HEAD
     namespace = "com.example.privy_181125"
+=======
+    namespace = "com.example.privy_301125"
+>>>>>>> fb4b703c066bdb05146bdb0ffed7bf4770df2a5f
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 

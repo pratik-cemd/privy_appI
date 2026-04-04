@@ -127,8 +127,11 @@ class _LoginScreenState extends State<LoginScreen> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
+<<<<<<< HEAD
   bool _isHolding = false;
 
+=======
+>>>>>>> fb4b703c066bdb05146bdb0ffed7bf4770df2a5f
   void _showSignUpDialog() {
     showDialog(
       context: context,
@@ -139,6 +142,7 @@ class _LoginScreenState extends State<LoginScreen> {
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
               color: Colors.white,
+<<<<<<< HEAD
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
@@ -237,6 +241,8 @@ class _LoginScreenState extends State<LoginScreen> {
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
               color: Colors.white,
+=======
+>>>>>>> fb4b703c066bdb05146bdb0ffed7bf4770df2a5f
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
@@ -259,7 +265,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           Navigator.pushNamed(context, SignupScreen.routeName,
                               arguments: 'doctor');
                         },
+<<<<<<< HEAD
                         child: _signupBox('Doctor', Icons.medical_services),
+=======
+                        child: _signupBox('Doctor'),
+>>>>>>> fb4b703c066bdb05146bdb0ffed7bf4770df2a5f
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -270,7 +280,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           Navigator.pushNamed(context, SignupScreen.routeName,
                               arguments: 'patient');
                         },
+<<<<<<< HEAD
                         child: _signupBox('Patient', Icons.person),
+=======
+                        child: _signupBox('Patient'),
+>>>>>>> fb4b703c066bdb05146bdb0ffed7bf4770df2a5f
                       ),
                     ),
                   ],
@@ -282,6 +296,7 @@ class _LoginScreenState extends State<LoginScreen> {
       },
     );
   }
+<<<<<<< HEAD
   //
   // Widget _signupBox(String label) {
   //   return Container(
@@ -365,6 +380,21 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
+=======
+
+  Widget _signupBox(String label) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Text(label),
+    );
+  }
+
+>>>>>>> fb4b703c066bdb05146bdb0ffed7bf4770df2a5f
   void _showForgotPasswordDialog() {
     final mobileCtl = TextEditingController();
     final emailCtl = TextEditingController();
@@ -641,6 +671,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
+<<<<<<< HEAD
 
   void _showAdminCodeDialog() {
     TextEditingController controller = TextEditingController();
@@ -686,4 +717,6 @@ class _LoginScreenState extends State<LoginScreen> {
       },
     );
   }
+=======
+>>>>>>> fb4b703c066bdb05146bdb0ffed7bf4770df2a5f
 }
