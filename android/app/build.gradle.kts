@@ -9,7 +9,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.privy_181125"
+    namespace = "com.example.privy_301125"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
